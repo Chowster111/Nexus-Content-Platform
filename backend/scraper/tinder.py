@@ -3,42 +3,10 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
 from datetime import datetime
-from keybert import KeyBERT
-from sentence_transformers import SentenceTransformer, util
 import time
-from .constants import CATEGORIES
-import math
-kw_model = KeyBERT()
-semantic_model = SentenceTransformer("BAAI/bge-base-en-v1.5")
+from .utils.embedding_utils import safe_encode, classify_article_semantically, semantic_model, category_embeddings,kw_model
 
-category_embeddings = {
-    cat: semantic_model.encode(examples, convert_to_tensor=True)
-    for cat, examples in CATEGORIES.items()
-}
-
-def is_valid_embedding(embedding, expected_dim=384):
-    return (
-        isinstance(embedding, list)
-        and len(embedding) == expected_dim
-        and all(isinstance(x, (float, int)) and math.isfinite(x) for x in embedding)
-    )
-
-
-def classify_article_semantically(title: str, summary: str) -> str:
-    text = f"{title}. {summary or ''}"
-    emb = semantic_model.encode(text, convert_to_tensor=True)
-
-    best_cat = "Uncategorized"
-    best_score = -1
-
-    for cat, reps in category_embeddings.items():
-        sim = util.cos_sim(emb, reps).max().item()
-        if sim > best_score:
-            best_cat = cat
-            best_score = sim
-
-    return best_cat
-
+device = "cpu"
 def scrape_all_tinder_articles():
     chrome_options = Options()
     chrome_options.add_argument("--no-sandbox")
@@ -63,28 +31,25 @@ def scrape_all_tinder_articles():
     soup = BeautifulSoup(html, "html.parser")
 
     articles = []
-    post_blocks = soup.select("div[data-post-id]")  # Updated selector
+    post_blocks = soup.select("div[data-post-id]")
 
     print("🔍 Found:", len(post_blocks))
 
     for post in post_blocks:
         try:
-            # Extract title
             title_el = post.select_one("h3 > div")
             title = title_el.get_text(strip=True) if title_el else None
 
-            # Extract URL
             link_el = post.select_one("a[href*='tinder']")
             url = link_el["href"].split("?")[0] if link_el else None
 
-            # Extract date
             time_el = post.select_one("time")
             published_date = (
                 datetime.fromisoformat(time_el["datetime"].replace("Z", "+00:00"))
                 if time_el and "datetime" in time_el.attrs else None
             )
 
-            summary = ""  # Placeholder
+            summary = ""
             if title and url:
                 text_for_tags = f"{title}. {summary}" if summary else title
                 keywords = kw_model.extract_keywords(
@@ -92,10 +57,10 @@ def scrape_all_tinder_articles():
                     stop_words='english', top_n=5
                 )
                 tags = [kw for kw, _ in keywords]
-                category = classify_article_semantically(title, summary)
+                category = classify_article_semantically(title, summary, category_embeddings, semantic_model)
                 text_for_embedding = f"Title: {title}. Category: {category}. Tags: {', '.join(tags)} Tinder Tech Blog"
-                embedding = semantic_model.encode(text_for_embedding).tolist()  # convert to list for JSON/SQL insert
-                if not is_valid_embedding(embedding):
+                embedding = safe_encode(text_for_embedding, semantic_model)
+                if embedding is None:
                     print(f"⚠️ Skipping due to invalid embedding: {title}")
                     continue
                 articles.append({
@@ -105,7 +70,7 @@ def scrape_all_tinder_articles():
                     "source": "Tinder Tech Blog",
                     "tags": tags,
                     "category": category,
-                    "embedding": embedding    
+                    "embedding": embedding
                 })
 
         except Exception as e:

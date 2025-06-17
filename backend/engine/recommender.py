@@ -6,7 +6,7 @@ import torch
 model = SentenceTransformer("BAAI/bge-base-en-v1.5")
 
 # Automatically choose GPU if available
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cpu")
 model = model.to(device)
 
 

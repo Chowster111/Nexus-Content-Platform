@@ -4,61 +4,9 @@ from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
 from datetime import datetime
 import time
-from keybert import KeyBERT
-from sentence_transformers import SentenceTransformer, util
-import torch
-import math
+from .utils.embedding_utils import safe_encode, classify_article_semantically, semantic_model, category_embeddings,kw_model
 
-CATEGORIES = {
-    "Frontend": [
-        "Responsive UI design", "JavaScript and CSS", "React components", "user interface engineering"
-    ],
-    "Backend": [
-        "API development", "server-side logic", "database design", "backend scalability"
-    ],
-    "Infrastructure": [
-        "DevOps practices", "Kubernetes", "CI/CD pipelines", "monitoring systems"
-    ],
-    "Machine Learning": [
-        "ML pipelines", "deep learning", "recommendation systems", "NLP"
-    ],
-    "Security": [
-        "application security", "OAuth", "encryption", "threat detection"
-    ],
-    "Cloud": [
-        "AWS Lambda", "serverless architecture", "cloud computing", "Azure integration"
-    ]
-}
-
-def is_valid_embedding(embedding, expected_dim=384):
-    return (
-        isinstance(embedding, list)
-        and len(embedding) == expected_dim
-        and all(isinstance(x, (float, int)) and math.isfinite(x) for x in embedding)
-    )
-
-kw_model = KeyBERT()
-semantic_model = SentenceTransformer("BAAI/bge-base-en-v1.5")
-category_embeddings = {
-    cat: semantic_model.encode(examples, convert_to_tensor=True)
-    for cat, examples in CATEGORIES.items()
-}
-
-def classify_article_semantically(title: str, summary: str) -> str:
-    text = f"{title}. {summary or ''}"
-    emb = semantic_model.encode(text, convert_to_tensor=True)
-
-    best_cat = "Uncategorized"
-    best_score = -1
-
-    for cat, reps in category_embeddings.items():
-        sim = util.cos_sim(emb, reps).max().item()
-        if sim > best_score:
-            best_cat = cat
-            best_score = sim
-
-    return best_cat
-
+device = "cpu"
 def scrape_all_stripe_articles():
     chrome_options = Options()
     chrome_options.add_argument("--no-sandbox")
@@ -100,11 +48,11 @@ def scrape_all_stripe_articles():
                     stop_words='english', top_n=5
                 )
                 tags = [kw for kw, _ in keywords]
-                category = classify_article_semantically(title, summary)
+                category = classify_article_semantically(title, summary, category_embeddings, semantic_model)
 
                 text_for_embedding = f"Title: {title}. Category: {category}. Tags: {', '.join(tags)} Stripe Blog"
-                embedding = semantic_model.encode(text_for_embedding).tolist()  # convert to list for JSON/SQL insert
-                if not is_valid_embedding(embedding):
+                embedding = safe_encode(text_for_embedding, semantic_model)
+                if embedding is None:
                     print(f"⚠️ Skipping due to invalid embedding: {title}")
                     continue
 

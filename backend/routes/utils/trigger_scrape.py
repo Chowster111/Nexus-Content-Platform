@@ -1,7 +1,7 @@
 from db.supabase_client import supabase
 import math
 
-def is_valid_embedding(embedding, expected_dim=384):
+def is_valid_embedding(embedding, expected_dim=768):
     return (
         isinstance(embedding, list)
         and len(embedding) == expected_dim
@@ -22,9 +22,6 @@ def trigger_scrape(source_name: str, scrape_fn):
         print(f"Content: {article.get('content', '')[:80]}...")
 
         embedding = article.get("embedding", None)
-        if not is_valid_embedding(embedding):
-            print("⚠️ Skipping article due to invalid embedding.")
-            continue
 
         # Check for duplicates
         existing = supabase.table("articles").select("id").eq("url", article["url"]).execute()
