@@ -4,6 +4,7 @@ from routes.scraper import router as scraper_router
 from fastapi.middleware.cors import CORSMiddleware
 from routes.recommend import router as recommend_router
 from routes.search import router as search_router
+from routes.analytics import router as analytics_router
 
 
 app = FastAPI()
@@ -21,6 +22,7 @@ app.include_router(articles_router, prefix="/articles")
 app.include_router(scraper_router, prefix="/scrape")
 app.include_router(recommend_router, prefix="/find")
 app.include_router(search_router, prefix="/search")
+app.include_router(analytics_router, prefix="/analytics")
 
 @app.get("/")
 def root():
