@@ -13,19 +13,6 @@ def get_all_articles():
         return {"error": str(e)}
     return response.data
 
-@router.get("/search")
-def search_articles(query: str = Query(..., min_length=2)):
-    try:
-        response = (
-            supabase.table("articles")
-            .select("*")
-            .ilike("title", f"%{query}%")
-            .execute()
-        )
-    except Exception as e:
-        print(f"❌ Error: {e}")
-        return {"error": str(e)}
-    return response.data
 
 @router.get("/tags/{tag}")
 def get_articles_by_tag(tag: str, sort: str = Query("latest", pattern="^(latest|oldest)$")):

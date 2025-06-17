@@ -31,6 +31,17 @@ def search_articles(q: str = Query(..., description="Search query")):
             scores.append((similarity, article))
 
     sorted_results = sorted(scores, key=lambda x: x[0], reverse=True)
-    top_results = [{"title": a["title"], "url": a["url"]} for s, a in sorted_results[:10]]
+    top_results = [
+        {
+            "title": article["title"],
+            "url": article["url"],
+            "source": article.get("source", "Unknown"),
+            "published_date": article.get("published_date", ""),
+            "content": article.get("content", ""),
+            "tags": article.get("tags", []),
+            "category": article.get("category", "")
+        }
+        for score, article in sorted_results[:10]
+    ]
 
     return {"results": top_results}

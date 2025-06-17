@@ -15,6 +15,7 @@ def fetch_articles_with_embeddings():
         supabase
         .table("articles")
         .select("*")
+        .order("published_date", desc=True)
         .execute()
     )
 

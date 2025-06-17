@@ -9,12 +9,10 @@ asyncpg
 
 
 datetime
-os
-# Supabase client
-supabase-py
-
 # Pydantic for data validation (already bundled with FastAPI, but good to be explicit)
 pydantic
+supabase
+
 
 # Web scraping
 selenium
