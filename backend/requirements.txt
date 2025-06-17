@@ -1,22 +1,32 @@
+# FastAPI framework and ASGI server
+fastapi
+uvicorn[standard]
+httpx
+
+# Database drivers
+# PostgreSQL driver for async operations
+asyncpg
+
+
+datetime
 os
+# Supabase client
+supabase-py
+
+# Pydantic for data validation (already bundled with FastAPI, but good to be explicit)
+pydantic
+
+# Web scraping
 selenium
 beautifulsoup4
-torch
+
+# Text processing and keyword extraction
+keybert
 sentence-transformers
-transformers
-pandas
-numpy
-scikit-learn
-scipy
-scikit-image
-opencv-python
-tqdm
-requests
-flask
-flask-cors
-flask-socketio
-eventlet
-gunicorn
-redis
-httpx
-supabase
+
+# For datetime and math utils (standard lib, included by default, but you may want extras like dateutil)
+python-dateutil
+
+# Optional: typing stubs and dev tools
+types-requests
+
