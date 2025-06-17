@@ -18,3 +18,5 @@ flask-socketio
 eventlet
 gunicorn
 redis
+httpx
+supabase
