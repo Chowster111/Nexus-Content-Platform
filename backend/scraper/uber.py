@@ -1,83 +1,69 @@
-# uber.py
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from bs4 import BeautifulSoup
+# uber_scraper.py
 from datetime import datetime
-import time
-from .utils.embedding_utils import safe_encode, classify_article_semantically, semantic_model, category_embeddings, kw_model
-
-BASE_URL = "https://www.uber.com/en-CA/blog/engineering/page/{}"
-MAX_PAGES = 2 # For testing, adjust as needed
+from bs4 import BeautifulSoup
+from .baseScraper import BaseBlogScraper
 
 device = "cpu"
-def scrape_all_uber_articles():
-    chrome_options = Options()
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-    driver = webdriver.Chrome(options=chrome_options)
+class UberScraper(BaseBlogScraper):
+    def __init__(self):
+        super().__init__(
+            source_name="Uber Engineering Blog",
+            base_url="https://www.uber.com/en-CA/blog/engineering/page/1",
+            scroll_limit=0  # no scroll needed, we paginate
+        )
+        self.MAX_PAGES = 20
+        self.PAGE_TEMPLATE = "https://www.uber.com/en-CA/blog/engineering/page/{}"
 
-    articles = []
-    
-    for page_num in range(1, MAX_PAGES + 1):
-        print(f"\n🌐 Visiting page {page_num}...")
-        driver.get(BASE_URL.format(page_num))
-        time.sleep(3)
-        html = driver.page_source
-        soup = BeautifulSoup(html, "html.parser")
-        post_blocks = soup.select("div[data-baseweb='flex-grid-item']")
+    def get_soup_pages(self):
+        soups = []
+        for page in range(1, self.MAX_PAGES + 1):
+            print(f"\n🌐 Visiting Uber page {page}")
+            self.driver.get(self.PAGE_TEMPLATE.format(page))
+            self.driver.implicitly_wait(5)
+            soup = BeautifulSoup(self.driver.page_source, "html.parser")
+            post_blocks = soup.select("div[data-baseweb='flex-grid-item']")
+            if not post_blocks:
+                print("❌ No more posts found. Stopping.")
+                break
+            soups.append(soup)
+        self.driver.quit()
+        return soups
 
-        if not post_blocks:
-            print("❌ No more posts found. Stopping pagination.")
-            break
+    def select_posts(self, soup):
+        return soup.select("div[data-baseweb='flex-grid-item']")
 
-        print(f"🔍 Found {len(post_blocks)} posts.")
+    def parse_post(self, post):
+        title_el = post.select_one("h2")
+        link_el = post.select_one("a[href]")
+        date_el = post.select_one("p")
 
-        for post in post_blocks:
+        title = title_el.get_text(strip=True) if title_el else None
+        url = link_el["href"].split("?")[0] if link_el else None
+
+        date_text = date_el.get_text(strip=True).split(" / ")[0] if date_el else None
+        published_date = None
+        if date_text:
             try:
-                title_el = post.select_one("h2")
-                link_el = post.select_one("a[href]")
-                date_el = post.select_one("p")
-
-                title = title_el.get_text(strip=True) if title_el else None
-                url = link_el["href"].split("?")[0] if link_el else None
-                date_text = date_el.get_text(strip=True).split(" / ")[0] if date_el else None
-                published_date = None
-                if date_text:
-                    try:
-                        published_date = datetime.strptime(date_text, "%B %d, %Y")
-                    except Exception as e:
-                        print(f"⚠️ Date parse failed: {date_text} — {e}")
-
-
-
-                summary = ""
-                if title and url:
-                    text_for_tags = f"{title}. {summary}" if summary else title
-                    keywords = kw_model.extract_keywords(
-                        text_for_tags, keyphrase_ngram_range=(1, 2),
-                        stop_words='english', top_n=5
-                    )
-                    tags = [kw for kw, _ in keywords]
-                    category = classify_article_semantically(title, summary, category_embeddings, semantic_model)
-                    text_for_embedding = f"Title: {title}. Category: {category}. Tags: {', '.join(tags)} Uber Engineering Blog"
-                    embedding = safe_encode(text_for_embedding, semantic_model)
-                    if embedding is None:
-                        print(f"⚠️ Skipping due to invalid embedding: {title}")
-                        continue
-                    articles.append({
-                        "title": title,
-                        "url": url,
-                        "published_date": published_date,
-                        "source": "Uber Engineering Blog",
-                        "tags": tags,
-                        "category": category,
-                        "embedding": embedding    
-                    })
-
+                published_date = datetime.strptime(date_text, "%B %d, %Y")
             except Exception as e:
-                print(f"⚠️ Error scraping post: {e}")
-                continue
+                print(f"⚠️ Date parse failed: {date_text} — {e}")
 
-    driver.quit()
-    print(f"\n✅ Done. Total articles scraped: {len(articles)}")
-    return articles
+        if title and url:
+            return self.enrich_article(title, url, published_date, summary="")
+
+        return None
+
+    def scrape(self):
+        soups = self.get_soup_pages()
+        articles = []
+
+        for soup in soups:
+            posts = self.select_posts(soup)
+            for post in posts:
+                try:
+                    article = self.parse_post(post)
+                    if article:
+                        articles.append(article)
+                except Exception as e:
+                    print(f"⚠️ Error scraping post: {e}")
+        return articles

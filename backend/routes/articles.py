@@ -6,23 +6,36 @@ router = APIRouter()
 
 @router.get("/")
 def get_all_articles():
-    response = supabase.table("articles").select("*").order("published_date", desc=True).execute()
+    try:
+        response = supabase.table("articles").select("*").order("published_date", desc=True).execute()
+    except Exception as e:
+        print(f"❌ Error: {e}")
+        return {"error": str(e)}
     return response.data
 
 @router.get("/search")
 def search_articles(query: str = Query(..., min_length=2)):
-    response = (
-        supabase.table("articles")
-        .select("*")
-        .ilike("title", f"%{query}%")
-        .execute()
-    )
+    try:
+        response = (
+            supabase.table("articles")
+            .select("*")
+            .ilike("title", f"%{query}%")
+            .execute()
+        )
+    except Exception as e:
+        print(f"❌ Error: {e}")
+        return {"error": str(e)}
     return response.data
 
 @router.get("/tags/{tag}")
 def get_articles_by_tag(tag: str, sort: str = Query("latest", pattern="^(latest|oldest)$")):
     tag = tag.lower()
-    response = supabase.table("articles").select("*").execute()
+    try:
+        response = supabase.table("articles").select("*").execute()
+    except Exception as e:
+        print(f" Error: {e}")
+        return {"error": str(e)}
+    
     all_articles = response.data
 
     filtered_articles = [
@@ -46,7 +59,13 @@ def filter_articles_by_tag(
         return {"error": "No tags provided"}
 
     tags = [tag.lower() for tag in tags]
-    response = supabase.table("articles").select("*").execute()
+
+    try:
+        response = supabase.table("articles").select("*").execute()
+    except Exception as e:
+        print("Error: {e}")
+        return {"error": str(e)}
+    
     all_articles = response.data
 
     filtered_articles = [
@@ -67,7 +86,12 @@ def filter_articles_by_tag(
 
 @router.get("/all-tags")
 def get_all_tags():
-    response = supabase.table("articles").select("tags").execute()
+    try:
+        response = supabase.table("articles").select("tags").execute()
+    except Exception as e:
+        print("Error: {e}")
+        return {"error": str(e)}
+    
     tag_counter = {}
 
     for row in response.data:
@@ -81,7 +105,13 @@ def get_all_tags():
 @router.get("/by-category/{category}")
 def get_by_category(category: str, sort: str = Query("latest", pattern="^(latest|oldest)$")):
     category = category[0].upper() + category[1:].lower()
-    response = supabase.table("articles").select("*").eq("category", category).execute()
+
+    try:
+        response = supabase.table("articles").select("*").eq("category", category).execute()
+    except Exception as e:
+        print("Error: {e}")
+        return {"error": {e}}
+    
     all_articles = response.data
 
     sorted_articles = sorted(
@@ -101,7 +131,11 @@ def get_by_source(source: str, sort: str = Query("latest", pattern="^(latest|old
     source = "Tinder Tech Blog" if source.lower() == "tinder" else source
     source = "Uber Engineering Blog" if source.lower() == "uber" else source
 
-    response = supabase.table("articles").select("*").eq("source", source).execute()
+    try:
+        response = supabase.table("articles").select("*").eq("source", source).execute()
+    except Exception as e:
+        print("Error: {e}")
+        return {"error": str(e)}
 
     sorted_articles = sorted(
         response.data,
@@ -113,5 +147,9 @@ def get_by_source(source: str, sort: str = Query("latest", pattern="^(latest|old
 
 @router.get("/{article_id}")
 def get_article(article_id: str):
-    response = supabase.table("articles").select("*").eq("id", article_id).single().execute()
+    try:
+        response = supabase.table("articles").select("*").eq("id", article_id).single().execute()
+    except Exception as e:
+        print("Error: {e}")
+        return {"error": str(e)}
     return response.data

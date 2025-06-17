@@ -1,42 +1,25 @@
+from http.client import HTTPException
 from fastapi import APIRouter
-from scraper.netflix import scrape_all_netflix_articles
-from scraper.airbnb import scrape_all_airbnb_articles
-from scraper.stripe import scrape_all_stripe_articles
-from scraper.tinder import scrape_all_tinder_articles
-from scraper.uber import scrape_all_uber_articles
-from .utils.trigger_scrape import trigger_scrape
-
+from .utils.trigger_scrape import trigger_scrape, SCRAPER_MAP
 
 router = APIRouter()
 
-@router.post("/netflix")
-def trigger_scrape_netflix():
-    return trigger_scrape("Netflix Tech Blog", scrape_all_netflix_articles)
+@router.post("/select/{source}")
+def trigger_scrape_source(source):
+    source = source.lower()
+    instanceFn = SCRAPER_MAP.get(source, None)
+    if not instanceFn:
+        raise HTTPException(status_code=400, detail=f"Invalid source '{source}'. Must be one of {list(SCRAPER_MAP.keys())}")
+    return trigger_scrape(source, instanceFn().scrape)
 
-@router.post("/airbnb")
-def trigger_scrape_airbnb():
-    return trigger_scrape("Airbnb Engineering Blog", scrape_all_airbnb_articles)
-
-@router.post("/stripe")
-def trigger_scrape_stripe():
-    return trigger_scrape("Stripe Blog", scrape_all_stripe_articles)
-
-@router.post("/tinder")
-def trigger_scrape_tinder():
-    return trigger_scrape("Tinder Tech Blog", scrape_all_tinder_articles)
-
-
-@router.post("/uber")
-def trigger_scrape_uber():
-    return trigger_scrape("Uber Engineering Blog", scrape_all_uber_articles)
 
 
 @router.post("/all")
 def trigger_scrape_all():
     results = {}
-    results["Netflix"] = trigger_scrape("Netflix Tech Blog", scrape_all_netflix_articles)
-    results["Airbnb"] = trigger_scrape("Airbnb Engineering Blog", scrape_all_airbnb_articles)
-    results["Stripe"] = trigger_scrape("Stripe Blog", scrape_all_stripe_articles)
-    results["Tinder"] = trigger_scrape("Tinder Tech Blog", scrape_all_tinder_articles)
-    results["Uber"] = trigger_scrape("Uber Engineering Blog", scrape_all_uber_articles)
+    for source in SCRAPER_MAP:
+        try:
+            results[source] = trigger_scrape(source, SCRAPER_MAP[source]().scrape)
+        except Exception as e:
+            results[source] = {"error": str(e)}
     return results

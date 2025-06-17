@@ -1,71 +1,98 @@
-from fastapi import APIRouter, Query
+# analytics.py
+from fastapi import APIRouter, Query, HTTPException
 from db.supabase_client import supabase
 from collections import defaultdict
 from datetime import datetime, timedelta
 
 router = APIRouter()
 
-
-# TODO
-# ADD ERROR HANDLING ON ALL ENDPOINTS
-
 @router.get("/blogs-by-source/{limit}")
-def blogs_by_source(limit=25):
-    response = supabase.table("articles").select("*").order("published_date", desc=True).execute()
-    articles = response.data
+def blogs_by_source(limit: int = 25):
+    try:
+        response = supabase.table("articles").select("*").order("published_date", desc=True).execute()
+    except Exception as e:
+        print(f"Error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
-    source_count = dict()
+    articles = response.data
+    source_count = {}
+
     for article in articles:
         source = article.get("source", "Unknown")
         source_count[source] = source_count.get(source, 0) + 1
-    
+
     sorted_sources = sorted(source_count.items(), key=lambda x: x[1], reverse=True)
-    top_sources = sorted_sources[:limit]
-    return  {"sources": top_sources}
+    return {"sources": sorted_sources[:limit]}
+
 
 @router.get("/most-common-tags/{limit}")
-def common_tags(limit=10):
-    response = supabase.table("articles").select("*").order("published_date", desc=True).execute()
-    articles = response.data
+def common_tags(limit: int = 10):
+    try:
+        response = supabase.table("articles").select("*").order("published_date", desc=True).execute()
+    except Exception as e:
+        print(f"Error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
-    tag_count = dict()
+    articles = response.data
+    tag_count = {}
+
     for article in articles:
         tags = article.get("tags", [])
         for tag in tags:
             tag = tag.lower()
             tag_count[tag] = tag_count.get(tag, 0) + 1
-    sorted_tags = sorted(tag_count.items(), key=lambda x: x[1], reverse=True)
-    top_tags = sorted_tags[:limit]
 
-    return {"tags": top_tags}
+    sorted_tags = sorted(tag_count.items(), key=lambda x: x[1], reverse=True)
+    return {"tags": sorted_tags[:limit]}
+
 
 @router.get("/category-count")
 def get_article_count_by_category():
-    result = supabase.table("articles").select("category").execute()
+    try:
+        result = supabase.table("articles").select("category").execute()
+    except Exception as e:
+        print(f"Error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
     category_counts = {}
     for row in result.data:
         cat = row["category"]
         category_counts[cat] = category_counts.get(cat, 0) + 1
+
     return {"category_counts": category_counts}
+
 
 @router.get("/articles-by-month")
 def get_articles_by_month():
-    response = supabase.table("articles").select("published_date").execute()
+    try:
+        response = supabase.table("articles").select("published_date").execute()
+    except Exception as e:
+        print(f"Error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
     monthly_counts = defaultdict(int)
 
     for row in response.data:
         if row["published_date"]:
             dt = datetime.fromisoformat(row["published_date"])
-            key = dt.strftime("%Y-%m")  # e.g., "2025-06"
+            key = dt.strftime("%Y-%m")  # Format: "2025-06"
             monthly_counts[key] += 1
 
     return dict(sorted(monthly_counts.items()))
 
+
 @router.get("/most-recent/{topk}")
-def get_most_recent(topk=20):
-    response = supabase.table("articles").select("*").order("published_date", desc=True).execute()
+def get_most_recent(topk: int = 20):
+    try:
+        response = supabase.table("articles").select("*").order("published_date", desc=True).execute()
+    except Exception as e:
+        print(f"Error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+    topk = min(topk, len(response.data))
     articles = response.data[:topk]
-    result = [
+
+    return [
         {
             "title": article["title"],
             "url": article["url"],
@@ -74,11 +101,13 @@ def get_most_recent(topk=20):
         }
         for article in articles
     ]
-    return result
 
 
 @router.get("/trending-tags")
-def trending_tags(period: str = Query("month", enum=["week", "month", "year"]), top_n: int = 10):
+def trending_tags(
+    period: str = Query("month", enum=["week", "month", "year"]),
+    top_n: int = 10
+):
     now = datetime.utcnow()
     if period == "week":
         since = now - timedelta(weeks=1)
@@ -87,11 +116,14 @@ def trending_tags(period: str = Query("month", enum=["week", "month", "year"]), 
     elif period == "year":
         since = now - timedelta(days=365)
 
-    response = supabase.table("articles").select("*").gte("published_date", since.isoformat()).execute()
-    articles = response.data
+    try:
+        response = supabase.table("articles").select("*").gte("published_date", since.isoformat()).execute()
+    except Exception as e:
+        print(f"Error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
     tag_count = {}
-    for article in articles:
+    for article in response.data:
         tags = article.get("tags", [])
         for tag in tags:
             tag = tag.lower()

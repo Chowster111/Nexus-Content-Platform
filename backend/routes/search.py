@@ -13,7 +13,12 @@ def search_articles(q: str = Query(..., description="Search query")):
     if query_embedding is None:
         return {"error": "Failed to embed query"}
 
-    response = supabase.table("articles").select("title", "url", "embedding").execute()
+    try:
+        response = supabase.table("articles").select("title", "url", "embedding").execute()
+    except Exception as e:
+        print("Error: {e}")
+        return {"error": str(e)}
+    
     articles = response.data
     if not articles:
         return {"results": []}

@@ -1,5 +1,19 @@
 from db.supabase_client import supabase
 import math
+from scraper.tinder import TinderScraper
+from scraper.netflix import NetflixScraper
+from scraper.airbnb import AirbnbScraper
+from scraper.stripe import StripeScraper
+from scraper.uber import UberScraper
+
+SCRAPER_MAP = {
+    "netflix": NetflixScraper,
+    "tinder": TinderScraper,
+    "airbnb": AirbnbScraper,
+    "uber": UberScraper,
+    "stripe": StripeScraper,
+}
+
 
 def is_valid_embedding(embedding, expected_dim=768):
     return (
