@@ -1,6 +1,6 @@
 # 🧠 Engineering Blog Recommender
 
-This is a full-stack system that **scrapes, classifies, tags, embeds, and recommends** articles from top engineering blogs like Netflix, Airbnb, Uber, and more.
+This is a full-stack system that **gathers classifies, tags, embeds, and recommends** 10,000 + articles from top engineering blogs like Netflix, Airbnb, Uber, and more. You are then able to get recommendations and recieve previews/summaries of each blog based on what you choose. You are able to like, dislike and favourite, improving the quality or recommendations you get.
 
 It powers:
 - 📰 A growing archive of tech blog posts  
