@@ -4,8 +4,6 @@ import torch
 
 # Load the model (high-performing for retrieval)
 model = SentenceTransformer("BAAI/bge-base-en-v1.5")
-
-# Automatically choose GPU if available
 device = torch.device("cpu")
 model = model.to(device)
 

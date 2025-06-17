@@ -99,6 +99,7 @@ def get_by_source(source: str, sort: str = Query("latest", pattern="^(latest|old
     source = "Airbnb Engineering Blog" if source.lower() == "airbnb" else source
     source = "Stripe Blog" if source.lower() == "stripe" else source
     source = "Tinder Tech Blog" if source.lower() == "tinder" else source
+    source = "Uber Engineering Blog" if source.lower() == "uber" else source
 
     response = supabase.table("articles").select("*").eq("source", source).execute()
 
