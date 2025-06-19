@@ -24,3 +24,46 @@
     0 20px 60px rgba(0, 0, 0, 0.3),
     0 8px 32px rgba(255, 255, 255, 0.05),
 }
+
+.toggleWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.toggleLabel {
+  font-size: 0.95rem;
+  color: #ccc;
+  font-weight: 500;
+}
+
+.toggle {
+  width: 52px;
+  height: 28px;
+  background-color: #333;
+  border-radius: 999px;
+  padding: 3px;
+  cursor: pointer;
+  position: relative;
+  transition: background-color 0.3s ease;
+  border: 1px solid #555;
+}
+
+.toggle.checked {
+  background-color: #999;
+}
+
+.thumb {
+  width: 22px;
+  height: 22px;
+  background-color: #fff;
+  border-radius: 50%;
+  transition: transform 0.3s ease;
+  transform: translateX(0);
+}
+
+.toggle.checked .thumb {
+  transform: translateX(24px);
+}

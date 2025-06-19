@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import styles from './styles/App.module.css'
 
 import ThreeScene from './components/ThreeScene'
@@ -7,6 +7,7 @@ import ToggleSwitch from './components/ToggleSwitch'
 import SearchSection from './components/SearchSection'
 import RecommendSection from './components/RecommendSection'
 import Results from './components/Results'
+import SwipeResults from './components/SwipeResults'
 
 import { searchArticles, recommendArticles } from './services/api'
 
@@ -24,20 +25,19 @@ export interface ResultItem {
 
 function App() {
   const [activeTab, setActiveTab] = useState<Tab>('search')
-
-  // Cache results per tab
-  const [searchResults, setSearchResults] = useState<ResultItem[]>([])
-  const [recommendResults, setRecommendResults] = useState<ResultItem[]>([])
-  const results = activeTab === 'search' ? searchResults : recommendResults
-
+  const [results, setResults] = useState<ResultItem[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [useSwipeMode, setUseSwipeMode] = useState(false)
+
+  const searchCache = useRef<ResultItem[]>([])
+  const recommendCache = useRef<ResultItem[]>([])
 
   const handleSearch = async (query: string) => {
     if (!query.trim()) return
     setLoading(true)
     setError(null)
-    setSearchResults([])
+    setResults([])
 
     try {
       const data = await searchArticles(query)
@@ -45,12 +45,13 @@ function App() {
         title: item.title,
         source: item.source || 'Unknown',
         tags: Array.isArray(item.tags) ? item.tags.join(', ') : item.tags || '',
-        category: item.category || 'General',
-        summary: 'Expand to read more',
+        summary: 'Expand to learn more',
         url: item.url || '#',
+        category: item.category || 'General',
         published_date: item.published_date || '',
       }))
-      setSearchResults(mapped)
+      setResults(mapped)
+      searchCache.current = mapped
     } catch (err) {
       console.error(err)
       setError('Failed to load search results.')
@@ -63,20 +64,21 @@ function App() {
     if (!query.trim()) return
     setLoading(true)
     setError(null)
-    setRecommendResults([])
+    setResults([])
 
     try {
       const data = await recommendArticles(query)
-      const mapped: ResultItem[] = data.slice(0, 5).map((item) => ({
+      const mapped: ResultItem[] = data.slice(0, 10).map((item) => ({
         title: item.title,
         source: item.source || 'Unknown',
         tags: Array.isArray(item.tags) ? item.tags.join(', ') : item.tags || '',
-        category: item.category || 'General',
-        summary: 'Expand to read more',
+        summary: 'Expand to learn more',
         url: item.url || '#',
+        category: item.category || 'General',
         published_date: item.published_date || '',
       }))
-      setRecommendResults(mapped)
+      setResults(mapped)
+      recommendCache.current = mapped
     } catch (err) {
       console.error(err)
       setError('Failed to load recommendations.')
@@ -91,16 +93,41 @@ function App() {
 
       <div className={styles.container}>
         <Header />
-        <ToggleSwitch activeTab={activeTab} onChange={setActiveTab} />
+        <ToggleSwitch
+          activeTab={activeTab}
+          onChange={(tab) => {
+            setActiveTab(tab)
+            if (tab === 'search') {
+              setResults(searchCache.current)
+            } else {
+              setResults(recommendCache.current)
+            }
+          }}
+        />
 
         <div className={styles.content}>
+<div className={styles.toggleWrapper}>
+  <span className={styles.toggleLabel}>Swipe Mode</span>
+  <div
+    className={`${styles.toggle} ${useSwipeMode ? styles.checked : ''}`}
+    onClick={() => setUseSwipeMode((prev) => !prev)}
+  >
+    <div className={styles.thumb} />
+  </div>
+</div>
+
+
           {activeTab === 'search' ? (
             <SearchSection onSearch={handleSearch} />
           ) : (
             <RecommendSection onRecommend={handleRecommend} />
           )}
 
-          <Results results={results} loading={loading} error={error} />
+          {useSwipeMode ? (
+            <SwipeResults results={results} />
+          ) : (
+            <Results results={results} loading={loading} error={error} />
+          )}
         </div>
       </div>
     </div>

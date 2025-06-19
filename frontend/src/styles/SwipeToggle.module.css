@@ -1,0 +1,41 @@
+.toggleWrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggleTrack {
+  width: 48px;
+  height: 24px;
+  background: #444;
+  border-radius: 20px;
+  position: relative;
+  transition: background 0.3s ease;
+}
+
+.toggleTrack.enabled {
+  background: #888;
+}
+
+.toggleThumb {
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.3s ease;
+}
+
+.toggleTrack.enabled .toggleThumb {
+  transform: translateX(24px);
+}
+
+.toggleLabel {
+  font-size: 0.85rem;
+  color: #ccc;
+  font-weight: 500;
+}

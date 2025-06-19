@@ -1,9 +1,7 @@
-// src/components/SwipeResults.tsx
 import React, { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import styles from '../styles/SwipeResults.module.css'
 import { ResultItem } from '../App'
-import { motion, AnimatePresence } from 'framer-motion'
-import { formatDistanceToNow, format } from 'date-fns'
 
 interface Props {
   results: ResultItem[]
@@ -11,78 +9,91 @@ interface Props {
 
 const SwipeResults: React.FC<Props> = ({ results }) => {
   const [index, setIndex] = useState(0)
+  const [direction, setDirection] = useState<'left' | 'right'>('right')
 
-  const handleSwipe = () => {
-    if (index < results.length - 1) {
-      setIndex(index + 1)
-    } else {
-      setIndex(results.length) // done
-    }
+  const handleNext = (dir: 'left' | 'right') => {
+    setDirection(dir)
+    setTimeout(() => {
+      setIndex((prev) => prev + 1)
+    }, 300)
   }
 
-  const formatDate = (isoDate?: string) => {
-    if (!isoDate) return ''
-    const date = new Date(isoDate)
-    const diff = Date.now() - date.getTime()
-    return diff < 45 * 24 * 60 * 60 * 1000
-      ? `${formatDistanceToNow(date)} ago`
-      : format(date, 'MMM yyyy')
+  const formatDate = (dateStr?: string): string => {
+    if (!dateStr) return ''
+    const date = new Date(dateStr)
+    return date.toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    })
   }
 
-  if (!results.length) return null
-  if (index >= results.length) return <div className={styles.done}>🎉 You’ve seen all articles!</div>
+  if (index >= results.length) {
+    return <div className={styles.done}></div>
+  }
 
-  const result = results[index]
+  const item = results[index]
 
   return (
     <div className={styles.swipeWrapper}>
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         <motion.div
-          key={index}
+          key={item.title + index}
           className={styles.card}
-          initial={{ x: 300, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          exit={{ x: -300, opacity: 0 }}
+          initial={{ opacity: 0, x: direction === 'left' ? 100 : -100 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: direction === 'left' ? -100 : 100 }}
           transition={{ duration: 0.3 }}
-          drag="x"
-          dragConstraints={{ left: 0, right: 0 }}
-          dragElastic={0.6}
-          onDragEnd={(event, info) => {
-            if (Math.abs(info.offset.x) > 100) {
-              handleSwipe()
-            }
-          }}
         >
-          <a href={result.url || '#'} target="_blank" rel="noopener noreferrer" className={styles.link}>
-            <div className={styles.resultTitle}>{result.title}</div>
-            <div className={styles.resultSource}>{result.source}</div>
+          <a
+            href={item.url || '#'}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.link}
+          >
+            <div className={styles.resultTitle}>{item.title}</div>
+            <div className={styles.resultSource}>{item.source}</div>
 
-            {result.category && (
-              <div className={styles.resultCategory}>{result.category}</div>
+            {item.category && (
+              <div className={styles.resultCategory}>{item.category}</div>
             )}
 
-            {result.tags && (
+            {item.tags && (
               <div className={styles.resultTags}>
-                {String(result.tags)
+                {String(item.tags)
                   .split(',')
                   .map((tag, i) => (
-                    <span className={styles.tag} key={i}>
+                    <div className={styles.tag} key={i}>
                       {tag.trim()}
-                    </span>
+                    </div>
                   ))}
               </div>
             )}
 
-            {result.published_date && (
-              <div className={styles.resultDate}>{formatDate(result.published_date)}</div>
-            )}
+            <div className={styles.resultSummary}>{item.summary}</div>
 
-            <div className={styles.resultSummary}>{result.summary}</div>
+            {item.published_date && (
+              <div className={styles.resultDateWrapper}>
+                <span className={styles.resultDate}>
+                  {formatDate(item.published_date)}
+                </span>
+              </div>
+            )}
           </a>
 
           <div className={styles.buttons}>
-            <button disabled className={styles.dislike}>👎</button>
-            <button disabled className={styles.like}>👍</button>
+            <button
+              className={styles.dislike}
+              onClick={() => handleNext('left')}
+            >
+              ✖
+            </button>
+            <button
+              className={styles.like}
+              onClick={() => handleNext('right')}
+            >
+              ✔
+            </button>
           </div>
         </motion.div>
       </AnimatePresence>
