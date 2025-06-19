@@ -14,7 +14,13 @@ def search_articles(q: str = Query(..., description="Search query")):
         return {"error": "Failed to embed query"}
 
     try:
-        response = supabase.table("articles").select("title", "url", "embedding").execute()
+        response = (
+            supabase
+            .table("articles")
+            .select("*")
+            .order("published_date", desc=True)
+            .execute()
+        )
     except Exception as e:
         print("Error: {e}")
         return {"error": str(e)}
@@ -35,13 +41,13 @@ def search_articles(q: str = Query(..., description="Search query")):
         {
             "title": article["title"],
             "url": article["url"],
-            "source": article.get("source", "Unknown"),
-            "published_date": article.get("published_date", ""),
+            "published_date": article["published_date"],
             "content": article.get("content", ""),
+            "source": article.get("source", ""),
             "tags": article.get("tags", []),
-            "category": article.get("category", "")
+            "category": article.get("category", ""),
         }
-        for score, article in sorted_results[:10]
+        for source, article in sorted_results[:10]
     ]
 
     return {"results": top_results}

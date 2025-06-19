@@ -1,0 +1,57 @@
+.toggleContainer {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0 30px;
+}
+
+.toggleInner {
+  position: relative;
+  background-color: #1f1f1f;
+  border-radius: 40px;
+  padding: 6px;
+  display: flex;
+  width: 300px;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.toggleOption {
+  flex: 1;
+  z-index: 2;
+  background: none;
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 12px 0;
+  cursor: pointer;
+  border-radius: 40px;
+  transition: color 0.3s ease;
+  position: relative;
+  color: #aaa;
+}
+
+.toggleOption:hover {
+  color: #fff;
+}
+
+.active {
+  color: #000; /* Active label inside the white slider */
+  z-index: 3;
+}
+
+.slider {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 50%;
+  height: calc(100% - 8px);
+  background: #ffffff;
+  border-radius: 40px;
+  transition: transform 0.3s ease;
+  z-index: 1;
+}
+
+.right {
+  transform: translateX(100%);
+}

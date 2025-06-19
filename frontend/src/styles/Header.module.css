@@ -1,0 +1,48 @@
+.header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.header h1 {
+  font-size: 3.5rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  background: linear-gradient(
+    135deg,
+    #ffffff 0%,
+    #f0f0f0 20%,
+    #e0e0e0 40%,
+    #d0d0d0 60%,
+    #c0c0c0 80%,
+    #b0b0b0 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 0 40px rgba(255, 255, 255, 0.3);
+  filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.2));
+  letter-spacing: -0.02em;
+  position: relative;
+}
+
+.header h1::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #ffffff, transparent);
+  border-radius: 1px;
+}
+
+.slogan {
+  font-size: 1rem;
+  color: #999;
+  font-weight: 300;
+  letter-spacing: 1.5px;
+  margin-bottom: 0;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
