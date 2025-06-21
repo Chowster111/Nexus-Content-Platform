@@ -19,7 +19,7 @@ const SwipeResults: React.FC<Props> = ({ results }) => {
   }
 
   const formatDate = (dateStr?: string): string => {
-    if (!dateStr) return ''
+    if (!dateStr || dateStr == "None") return ''
     const date = new Date(dateStr)
     return date.toLocaleDateString(undefined, {
       year: 'numeric',

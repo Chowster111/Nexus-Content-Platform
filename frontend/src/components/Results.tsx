@@ -15,7 +15,7 @@ interface Props {
 
 const Results: React.FC<Props> = ({ results, loading, error }) => {
   const formatDate = (isoDate?: string) => {
-    if (!isoDate) return ''
+    if (!isoDate || isoDate == "None") return ''
     try {
       const date = new Date(isoDate)
       const diff = Date.now() - date.getTime()
