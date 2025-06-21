@@ -9,9 +9,9 @@ class UberScraper(BaseBlogScraper):
         super().__init__(
             source_name="Uber Engineering Blog",
             base_url="https://www.uber.com/en-CA/blog/engineering/page/1",
-            scroll_limit=0  # no scroll needed, we paginate
+            scroll_limit=2
         )
-        self.MAX_PAGES = 20
+        self.MAX_PAGES = 40
         self.PAGE_TEMPLATE = "https://www.uber.com/en-CA/blog/engineering/page/{}"
 
     def get_soup_pages(self):
@@ -21,10 +21,6 @@ class UberScraper(BaseBlogScraper):
             self.driver.get(self.PAGE_TEMPLATE.format(page))
             self.driver.implicitly_wait(5)
             soup = BeautifulSoup(self.driver.page_source, "html.parser")
-            post_blocks = soup.select("div[data-baseweb='flex-grid-item']")
-            if not post_blocks:
-                print("❌ No more posts found. Stopping.")
-                break
             soups.append(soup)
         self.driver.quit()
         return soups

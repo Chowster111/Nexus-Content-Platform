@@ -37,7 +37,6 @@ def trigger_scrape(source_name: str, scrape_fn):
 
         embedding = article.get("embedding", None)
 
-        # Check for duplicates
         existing = supabase.table("articles").select("id").eq("url", article["url"]).execute()
         if existing.data:
             article_id = existing.data[0]['id']
