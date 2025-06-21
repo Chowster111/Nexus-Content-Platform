@@ -5,6 +5,7 @@ from scraper.netflix import NetflixScraper
 from scraper.airbnb import AirbnbScraper
 from scraper.stripe import StripeScraper
 from scraper.uber import UberScraper
+from engine.summary import summarize
 
 SCRAPER_MAP = {
     "netflix": NetflixScraper,
@@ -42,9 +43,9 @@ def trigger_scrape(source_name: str, scrape_fn):
             article_id = existing.data[0]['id']
             try:
                 supabase.table("articles").update({
-                    "embedding": embedding
+                    "content": "Content Coming..."
                 }).eq("id", article_id).execute()
-                print("✅ Updated.")
+                print("✅ Updated Content.")
                 continue
             except Exception as e:
                 print(f"❌ Update failed: {e}")
@@ -57,6 +58,7 @@ def trigger_scrape(source_name: str, scrape_fn):
                 "url": article["url"],
                 "published_date": article["published_date"].isoformat() if article["published_date"] else None,
                 "content": article.get("content", ""),
+                "summary": summarize(article["title"], article["tags"]),
                 "source": article.get("source", source_name),
                 "tags": article.get("tags", []),
                 "category": article.get("category", ""),
