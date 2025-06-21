@@ -1,3 +1,5 @@
+version: '3.9'
+
 services:
   backend:
     build:
@@ -7,7 +9,26 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./backend:/app
+      - ./backend:/app 
     env_file:
       - ./.env
     restart: unless-stopped
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend-service
+    ports:
+      - "3000:80"
+    volumes:
+      - ./frontend:/app 
+    restart: unless-stopped
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
