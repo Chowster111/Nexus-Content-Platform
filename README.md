@@ -1,16 +1,49 @@
 # 🧠 Engineering Blog Recommender
 
-This is a full-stack system that **gathers classifies, tags, embeds, and recommends** 10,000 + articles from top engineering blogs like Netflix, Airbnb, Uber, and more. You are then able to get recommendations and recieve previews/summaries of each blog based on what you choose. You are able to like, dislike and favourite, improving the quality or recommendations you get.
+This is a full-stack system that **gathers, classifies, tags, embeds, and recommends** 10,000+ articles from top engineering blogs like Netflix, Airbnb, Uber, and more.
 
-It powers:
-- 📰 A growing archive of tech blog posts  
-- 🔍 Search + semantic understanding  
-- 🤖 AI-powered personalized recommendations  
-- 📊 Developer-focused analytics
+You can:
+- 🔍 **Search** and semantically explore blog posts  
+- 🤖 **Receive AI-powered recommendations**  
+- 📰 **Preview summaries**, visit links, and even swipe through results  
+- ❤️ **Like, dislike, and favorite** articles to improve recommendations  
 
 ---
 
-## 🚀 Features
+## 🖼️ Screenshots
+
+### 🔍 Homepage
+![Homepage Screenshot](screenshots/homePage.png)
+
+### 🔍 Results
+![Homesearch Screenshot](screenshots/homeScroll.png)
+
+### 🤖 Swipe Mode
+![Swipe Mode](screenshots/homeSwipe.png)
+
+---
+
+## ✨ Frontend (React + TypeScript)
+
+The frontend is a modern **React app** built with:
+- **TypeScript** + **Vite**
+- **Framer Motion** for animations
+- **CSS Modules** for scoped styling
+- **`react-loading-skeleton`** for async placeholders
+- **Swipe Mode**: Tinder-style swipe-to-like UX
+- **Toggle UI**: Seamlessly switch between search and recommendation views
+
+### Features
+| Feature        | Description                                    |
+|----------------|------------------------------------------------|
+| 🖼️ Card UI     | Displays articles with title, tags, source, etc. |
+| 🔄 Swipe Mode  | One-at-a-time card interface with like/dislike |
+| 🧠 Smart Summaries | Articles show clean summaries via AI       |
+| 🎛️ Toggleable Mode | Switch between list or swipe view         |
+
+---
+
+## 🚀 Backend Features
 
 | Feature                         | Description                                                                 |
 |--------------------------------|-----------------------------------------------------------------------------|
@@ -30,24 +63,23 @@ It powers:
 ```
 
 .
-├── scrapers/
+├── scrapers/                   # Scraper logic per blog
 │   ├── netflix.py
 │   ├── airbnb.py
-│   ├── uber.py
 │   └── ...
-│
+├── frontend/                   # React app (Vite + TS)
+│   ├── components/
+│   ├── styles/
+│   └── App.tsx
 ├── db/
 │   └── supabase\_client.py
-│
 ├── routers/
 │   ├── search.py
 │   ├── recommend.py
 │   └── analytics.py
-│
 ├── utils/
 │   ├── embedding\_utils.py
 │   └── constants.py
-│
 ├── main.py
 └── requirements.txt
 
@@ -64,22 +96,31 @@ git clone https://github.com/yourusername/engineering-blog-recommender.git
 cd engineering-blog-recommender
 ````
 
-### 2. Install Dependencies
+### 2. Install Backend Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 3. Set Environment
+### 3. Install Frontend
 
-Create a `.env` or configure your Supabase URL and key:
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### 4. Set Environment
+
+Create a `.env` or export:
 
 ```env
 SUPABASE_URL=your-supabase-url
 SUPABASE_KEY=your-supabase-key
+HF_API_TOKEN=your-huggingface-token
 ```
 
-### 4. Run API
+### 5. Run Backend
 
 ```bash
 uvicorn main:app --reload
@@ -87,47 +128,43 @@ uvicorn main:app --reload
 
 ---
 
-## 🔌 Key Endpoints
+## 🔌 API Endpoints
 
-| Endpoint                 | Description                            |
-| ------------------------ | -------------------------------------- |
-| `/scrape/netflix`        | Scrapes Netflix Engineering blog       |
-| `/scrape/airbnb`         | Scrapes Airbnb Engineering blog        |
-| `/scrape/uber`           | Scrapes Uber Engineering blog          |
-| `/recommend?title=...`   | Recommends similar articles            |
-| `/search?q=...`          | Searches articles by keyword           |
-| `/blogs-by-source`       | Shows top sources by article count     |
-| `/most-common-tags`      | Most frequent tags across all articles |
-| `/category-count`        | Distribution of articles by category   |
-| `/trending-tags?period=` | Trending tags this week/month/year     |
+| Endpoint               | Description                            |
+| ---------------------- | -------------------------------------- |
+| `/scrape/netflix`      | Scrapes Netflix Engineering blog       |
+| `/recommend?title=...` | Recommends similar articles            |
+| `/search?q=...`        | Searches articles by keyword           |
+| `/most-common-tags`    | Most frequent tags across all articles |
+| `/category-count`      | Distribution of articles by category   |
 
 ---
 
 ## 🤖 Models Used
 
-* [`BAAI/bge-base-en-v1.5`](https://huggingface.co/BAAI/bge-base-en-v1.5) for deep sentence embeddings
-* [`KeyBERT`](https://github.com/MaartenGr/KeyBERT) for tag extraction
-* Cosine similarity for category classification & recommendations
+* [`BAAI/bge-base-en-v1.5`](https://huggingface.co/BAAI/bge-base-en-v1.5) — Embeddings
+* [`KeyBERT`](https://github.com/MaartenGr/KeyBERT) — Tagging
+* [`facebook/bart-large-cnn`](https://huggingface.co/facebook/bart-large-cnn) — Summarization via inference API
 
 ---
 
-## 🧪 Testing
+## 🧪 Example Queries
 
 ```bash
-curl http://localhost:8000/recommend?title=How+we+scaled+our+API
+curl http://localhost:8000/recommend?title=Scaling+our+Data+Infra
 curl http://localhost:8000/search?q=GraphQL
-curl http://localhost:8000/trending-tags?period=month
 ```
 
 ---
 
-## 📦 Roadmap Ideas
+## 📦 Roadmap
 
-* [ ] Full-content scraping for deeper semantic understanding
-* [ ] User profiles + personalized suggestions
-* [ ] Weekly newsletter with trending blog posts
-* [ ] Frontend dashboard (Streamlit or React)
-* [ ] Embedding index optimization (FAISS or HNSW)
+* [x] Swipe interface
+* [x] Summary fallback UI
+* [x] Auto tag extraction
+* [ ] Personalized feed per user
+* [ ] Embed search (FAISS)
+* [ ] Weekly digest emails
 
 ---
 
@@ -136,9 +173,5 @@ curl http://localhost:8000/trending-tags?period=month
 * [Netflix Tech Blog](https://netflixtechblog.com/)
 * [Airbnb Engineering](https://medium.com/airbnb-engineering)
 * [Uber Engineering](https://www.uber.com/blog/engineering/)
-
----
-
-## 🧑‍💻 Author
-
-Built with 💻 and ☕ by **Arijit Chowdhury**
+* [Stripe Engineering](https://stripe.com/blog)
+* [Tinder Engineering](https://medium.com/tinder)
