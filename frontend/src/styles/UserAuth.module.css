@@ -1,0 +1,47 @@
+.authWrapper {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  justify-content: flex-end;
+  z-index: 10;
+}
+
+.authInner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.avatar {
+  font-size: 18px;
+}
+
+.email {
+  font-size: 0.9rem;
+  color: #fff;
+}
+
+.iconButton {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.iconButton img {
+  width: 20px;
+  height: 20px;
+  filter: invert(1); /* Make icons white on dark background */
+  transition: transform 0.2s ease;
+}
+
+.iconButton:hover img {
+  transform: scale(1.1);
+  opacity: 0.85;
+}

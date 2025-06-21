@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import styles from './styles/App.module.css'
 
 import ThreeScene from './components/ThreeScene'
@@ -8,8 +8,11 @@ import SearchSection from './components/SearchSection'
 import RecommendSection from './components/RecommendSection'
 import Results from './components/Results'
 import SwipeResults from './components/SwipeResults'
+import UserAuth from './components/UserAuth'
 
 import { searchArticles, recommendArticles } from './services/api'
+import { supabase } from '../lib/supabaseClient'
+import type { User } from '@supabase/supabase-js'
 
 export type Tab = 'search' | 'recommend'
 
@@ -29,9 +32,24 @@ function App() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [useSwipeMode, setUseSwipeMode] = useState(false)
+  const [user, setUser] = useState<User | null>(null)
 
   const searchCache = useRef<ResultItem[]>([])
   const recommendCache = useRef<ResultItem[]>([])
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setUser(data?.session?.user ?? null)
+    })
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+    })
+
+    return () => {
+      listener?.subscription.unsubscribe()
+    }
+  }, [])
 
   const handleSearch = async (query: string) => {
     if (!query.trim()) return
@@ -89,8 +107,8 @@ function App() {
 
   return (
     <div className={styles.app}>
+      <UserAuth />
       <ThreeScene />
-
       <div className={styles.container}>
         <Header />
         <ToggleSwitch
@@ -106,16 +124,15 @@ function App() {
         />
 
         <div className={styles.content}>
-<div className={styles.toggleWrapper}>
-  <span className={styles.toggleLabel}>Swipe Mode</span>
-  <div
-    className={`${styles.toggle} ${useSwipeMode ? styles.checked : ''}`}
-    onClick={() => setUseSwipeMode((prev) => !prev)}
-  >
-    <div className={styles.thumb} />
-  </div>
-</div>
-
+          <div className={styles.toggleWrapper}>
+            <span className={styles.toggleLabel}>Swipe Mode</span>
+            <div
+              className={`${styles.toggle} ${useSwipeMode ? styles.checked : ''}`}
+              onClick={() => setUseSwipeMode((prev) => !prev)}
+            >
+              <div className={styles.thumb} />
+            </div>
+          </div>
 
           {activeTab === 'search' ? (
             <SearchSection onSearch={handleSearch} />
@@ -124,9 +141,9 @@ function App() {
           )}
 
           {useSwipeMode ? (
-            <SwipeResults results={results} />
+            <SwipeResults results={results} /* pass user if needed */ />
           ) : (
-            <Results results={results} loading={loading} error={error} />
+            <Results results={results} loading={loading} error={error} /* pass user if needed */ />
           )}
         </div>
       </div>
