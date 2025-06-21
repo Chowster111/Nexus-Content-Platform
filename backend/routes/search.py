@@ -46,6 +46,7 @@ def search_articles(q: str = Query(..., description="Search query")):
             "source": article.get("source", ""),
             "tags": article.get("tags", []),
             "category": article.get("category", ""),
+            "summary": article.get("summary", ""),
         }
         for source, article in sorted_results[:10]
     ]

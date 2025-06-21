@@ -83,7 +83,10 @@ const Results: React.FC<Props> = ({ results, loading, error }) => {
             <div className={styles.resultDate}>{formatDate(result.published_date)}</div>
           )}
 
-          <div className={styles.resultSummary}>{result.summary}</div>
+          <div className={styles.resultSummary}>
+            {(result.summary || '').replace(/^"(.*)"$/, '$1').trim()}
+          </div>
+
         </motion.a>
       ))}
     </div>

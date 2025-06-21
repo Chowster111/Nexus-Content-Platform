@@ -74,6 +74,7 @@ def recommend_articles(query: str, top_k: int = 5):
             "source": article.get("source", ""),
             "tags": article.get("tags", []),
             "category": article.get("category", ""),
+            "summary": article.get("summary", ""),
         }
         for _, article in similarities[:top_k]
     ]

@@ -70,7 +70,10 @@ const SwipeResults: React.FC<Props> = ({ results }) => {
               </div>
             )}
 
-            <div className={styles.resultSummary}>{item.summary}</div>
+            <div className={styles.resultSummary}>
+            {(item.summary || '').replace(/^"(.*)"$/, '$1').trim()}
+          </div>
+
 
             {item.published_date && (
               <div className={styles.resultDateWrapper}>
