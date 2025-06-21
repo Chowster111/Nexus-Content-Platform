@@ -39,6 +39,7 @@ class UberScraper(BaseBlogScraper):
 
         title = title_el.get_text(strip=True) if title_el else None
         url = link_el["href"].split("?")[0] if link_el else None
+        url = "https://www.uber.com" + url
 
         date_text = date_el.get_text(strip=True).split(" / ")[0] if date_el else None
         published_date = None
