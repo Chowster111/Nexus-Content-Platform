@@ -10,9 +10,12 @@ export async function searchArticles(query: string): Promise<ResultItem[]> {
   return res.data.results || []
 }
 
-export async function recommendArticles(query: string): Promise<ResultItem[]> {
+export async function recommendArticles(query: string, userId?: string): Promise<ResultItem[]> {
+  const params: Record<string, string> = { query, top_k: '5' }
+  if (userId) params.user_id = userId
+
   const res = await axios.get(`${API_BASE}/find/recommend`, {
-    params: { query, top_k: 5 },
+    params,
   })
   return res.data || []
 }
