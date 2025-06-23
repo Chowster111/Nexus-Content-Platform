@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import styles from './styles/App.module.css'
-
+import { saveUserLikes } from './services/likes'
 import ThreeScene from './components/ThreeScene'
 import Header from './components/Header'
 import ToggleSwitch from './components/ToggleSwitch'
@@ -26,6 +26,10 @@ export interface ResultItem {
   published_date?: string
 }
 
+export interface LikedItem extends ResultItem {
+  liked: boolean
+}
+
 function App() {
   const [activeTab, setActiveTab] = useState<Tab>('search')
   const [results, setResults] = useState<ResultItem[]>([])
@@ -33,6 +37,21 @@ function App() {
   const [error, setError] = useState<string | null>(null)
   const [useSwipeMode, setUseSwipeMode] = useState(false)
   const [user, setUser] = useState<User | null>(null)
+  const [likes, setLikes] = useState<LikedItem[]>([])
+
+  const handleLike = (item: ResultItem & { liked: boolean }) => {
+    setLikes((prev) => [...prev, item])
+  }
+
+  const handleSwipeComplete = async () => {
+    if (!user) return
+    try {
+      await saveUserLikes(user.id, likes)
+    } catch (err) {
+      console.error(err)
+    }
+}
+
 
   const searchCache = useRef<ResultItem[]>([])
   const recommendCache = useRef<ResultItem[]>([])
@@ -141,7 +160,12 @@ function App() {
           )}
 
           {useSwipeMode ? (
-            <SwipeResults results={results} /* pass user if needed */ />
+            <SwipeResults
+              results={results}
+              onLike={handleLike}
+              onSwipeComplete={handleSwipeComplete}
+              user={user}
+            />
           ) : (
             <Results results={results} loading={loading} error={error} /* pass user if needed */ />
           )}
