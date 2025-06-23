@@ -2,15 +2,12 @@ from sentence_transformers import SentenceTransformer, util
 from db.supabase_client import supabase
 import torch
 
-# Load the model (high-performing for retrieval)
 model = SentenceTransformer("BAAI/bge-base-en-v1.5")
 device = torch.device("cpu")
 model = model.to(device)
 
 
 def fetch_articles_with_embeddings():
-    print("🧪 Fetching articles with embeddings...")
-
     result = (
         supabase
         .table("articles")
@@ -18,7 +15,6 @@ def fetch_articles_with_embeddings():
         .order("published_date", desc=True)
         .execute()
     )
-
     raw_articles = result.data or []
     print(f"📦 Total fetched: {len(raw_articles)}")
 
@@ -32,52 +28,73 @@ def fetch_articles_with_embeddings():
     return valid_articles
 
 
-
-
 def get_combined_embedding(text: str):
-    # Normalize the query embedding and move it to the correct device
     embedding = model.encode(text, convert_to_tensor=True)
     embedding = embedding.to(device)
     return embedding / embedding.norm(p=2)
 
 
-def recommend_articles(query: str, top_k: int = 5):
-    print(f"📥 Incoming query: {query}")
+def fetch_liked_article_urls(user_id: str):
+    result = (
+        supabase
+        .table("likes")
+        .select("article_url, liked")
+        .eq("user_id", user_id)
+        .execute()
+    )
+    return [entry["article_url"] for entry in result.data or [] if entry.get("liked")]
+
+
+def extract_tags_from_articles(articles, urls: list[str]):
+    tag_set = set()
+    for article in articles:
+        if article["url"] in urls:
+            tags = article.get("tags", [])
+            if isinstance(tags, str):
+                tags = tags.split(",")
+            for tag in tags:
+                tag_set.add(tag.strip())
+    return list(tag_set)
+
+
+def recommend_articles(query: str, top_k: int = 5, user_id: str = None):
     articles = fetch_articles_with_embeddings()
     if not articles:
         print("⚠️ No articles with embeddings found.")
         return []
 
-    query_embedding = get_combined_embedding(query)
+    # Personalize if user_id is given
+    if user_id:
+        liked_urls = fetch_liked_article_urls(user_id)
+        liked_tags = extract_tags_from_articles(articles, liked_urls)
+        if liked_tags:
+            query = " ".join(liked_tags[:10])
+            print(f"🧠 Personalized query: {query}")
+        else:
+            print("ℹ️ No liked tags found, falling back to original query.")
 
+    query_embedding = get_combined_embedding(query)
     similarities = []
+
     for article in articles:
         try:
-            # Convert and normalize article embedding
-            embedding_tensor = torch.tensor(article["embedding"], device=device)
-            embedding_tensor = embedding_tensor / embedding_tensor.norm(p=2)
-
-            score = util.cos_sim(query_embedding, embedding_tensor).item()
+            emb_tensor = torch.tensor(article["embedding"], device=device)
+            emb_tensor = emb_tensor / emb_tensor.norm(p=2)
+            score = util.cos_sim(query_embedding, emb_tensor).item()
             similarities.append((score, article))
         except Exception as e:
             print(f"❌ Skipping article due to error: {e}")
-            continue
 
-    # Sort articles by similarity score (highest first)
     similarities.sort(reverse=True, key=lambda x: x[0])
-    top_results = [
+    return [
         {
-            "title": article["title"],
-            "url": article["url"],
-            "published_date": article["published_date"],
-            "content": article.get("content", ""),
-            "source": article.get("source", ""),
-            "tags": article.get("tags", []),
-            "category": article.get("category", ""),
-            "summary": article.get("summary", ""),
+            "title": a["title"],
+            "url": a["url"],
+            "published_date": a["published_date"],
+            "source": a.get("source", ""),
+            "tags": a.get("tags", []),
+            "category": a.get("category", ""),
+            "summary": a.get("summary", ""),
         }
-        for _, article in similarities[:top_k]
+        for _, a in similarities[:top_k]
     ]
-
-    print(f"✅ Top {top_k} recommendations ready.")
-    return top_results
