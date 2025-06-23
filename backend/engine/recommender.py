@@ -63,7 +63,6 @@ def recommend_articles(query: str, top_k: int = 5, user_id: str = None):
         print("⚠️ No articles with embeddings found.")
         return []
 
-    # Personalize if user_id is given
     if user_id:
         liked_urls = fetch_liked_article_urls(user_id)
         liked_tags = extract_tags_from_articles(articles, liked_urls)
