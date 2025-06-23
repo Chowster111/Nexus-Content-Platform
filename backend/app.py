@@ -6,6 +6,7 @@ from routes.recommend import router as recommend_router
 from routes.search import router as search_router
 from routes.analytics import router as analytics_router
 from routes.auth import router as auth_router
+from routes.likes import router as likes_router
 
 
 app = FastAPI()
@@ -25,6 +26,7 @@ app.include_router(recommend_router, prefix="/find")
 app.include_router(search_router, prefix="/search")
 app.include_router(analytics_router, prefix="/analytics")
 app.include_router(auth_router, prefix="/auth")
+app.include_router(likes_router, prefix="/user")
 
 @app.get("/")
 def root():
