@@ -1,22 +1,37 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import styles from '../styles/SwipeResults.module.css'
+import type { User } from '@supabase/supabase-js'
 import { ResultItem } from '../App'
+import type { LikedItem } from '../App'
 
 interface Props {
   results: ResultItem[]
+  onLike: (item: LikedItem) => void
+  onSwipeComplete: () => void
+  user: User | null
 }
 
-const SwipeResults: React.FC<Props> = ({ results }) => {
+const SwipeResults: React.FC<Props> = ({ results, onLike, onSwipeComplete, user }) => {
   const [index, setIndex] = useState(0)
   const [direction, setDirection] = useState<'left' | 'right'>('right')
 
   const handleNext = (dir: 'left' | 'right') => {
+    onLike({ ...results[index], liked: dir === 'right' })
+
     setDirection(dir)
+
     setTimeout(() => {
-      setIndex((prev) => prev + 1)
+      const nextIndex = index + 1
+      setIndex(nextIndex)
+
+      if (nextIndex >= results.length) {
+        onSwipeComplete()
+      }
     }, 300)
   }
+
+
 
   const formatDate = (dateStr?: string): string => {
     if (!dateStr || dateStr == "None") return ''

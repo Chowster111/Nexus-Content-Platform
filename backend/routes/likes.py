@@ -16,7 +16,8 @@ async def save_likes(request: Request):
     for article in likes:
         supabase.table("likes").insert({
             "user_id": user_id,
-            "article_id": article,
+            "article_url": article.get("url", ""),
+            "liked": article["liked"],
         }).execute()
 
     return {"message": "Likes saved"}

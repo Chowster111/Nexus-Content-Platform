@@ -1,7 +1,6 @@
 import axios from 'axios'
 import { ResultItem } from '../App'
 
-// ✅ Use relative paths so NGINX can proxy /api → backend
 const API_BASE = '/api'
 
 export async function searchArticles(query: string): Promise<ResultItem[]> {
