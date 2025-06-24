@@ -1,13 +1,13 @@
 from fastapi import FastAPI
-from routes.articles import router as articles_router
-from routes.scraper import router as scraper_router
 from fastapi.middleware.cors import CORSMiddleware
-from routes.recommend import router as recommend_router
-from routes.search import router as search_router
+
 from routes.analytics import router as analytics_router
+from routes.articles import router as articles_router
 from routes.auth import router as auth_router
 from routes.likes import router as likes_router
-
+from routes.recommend import router as recommend_router
+from routes.scraper import router as scraper_router
+from routes.search import router as search_router
 
 app = FastAPI()
 # CORS settings for frontend integration

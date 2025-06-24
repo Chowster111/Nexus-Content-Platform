@@ -1,5 +1,7 @@
+from typing import List, Optional
+
 from fastapi import APIRouter, Query
-from typing import Optional, List
+
 from db.supabase_client import supabase
 
 router = APIRouter()

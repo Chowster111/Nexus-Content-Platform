@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Query
+
 from engine.recommender import recommend_articles
 
 router = APIRouter()

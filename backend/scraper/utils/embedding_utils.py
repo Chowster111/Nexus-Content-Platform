@@ -1,10 +1,12 @@
-import os
-import numpy as np
-import torch
-from sentence_transformers import SentenceTransformer, util
 import math
+import os
+
+import numpy as np
 from keybert import KeyBERT
+from sentence_transformers import SentenceTransformer, util
+
 from .constants import CATEGORIES
+
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 device = "cpu"
@@ -16,7 +18,6 @@ def is_valid_embedding(embedding, expected_dim=768):
     arr = np.array(embedding)
     return np.all(np.isfinite(arr)) and not np.all(arr == 0)
 
-import numpy as np
 
 def safe_encode(text, model, expected_dim=768):
     try:

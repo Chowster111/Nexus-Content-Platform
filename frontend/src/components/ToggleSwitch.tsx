@@ -1,4 +1,3 @@
-import React from 'react'
 import styles from '../styles/ToggleSwitch.module.css'
 import { Tab } from '../App'
 

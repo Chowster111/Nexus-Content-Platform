@@ -1,8 +1,10 @@
 # analytics.py
-from fastapi import APIRouter, Query, HTTPException
-from db.supabase_client import supabase
 from collections import defaultdict
 from datetime import datetime, timedelta
+
+from fastapi import APIRouter, HTTPException, Query
+
+from db.supabase_client import supabase
 
 router = APIRouter()
 

@@ -1,9 +1,16 @@
+import time
+
+from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from bs4 import BeautifulSoup
-from datetime import datetime
-import time
-from .utils.embedding_utils import safe_encode, classify_article_semantically, semantic_model, category_embeddings, kw_model
+
+from .utils.embedding_utils import (
+    category_embeddings,
+    classify_article_semantically,
+    kw_model,
+    safe_encode,
+    semantic_model,
+)
 
 device = "cpu"
 class BaseBlogScraper:

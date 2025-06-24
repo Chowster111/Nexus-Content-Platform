@@ -8,17 +8,17 @@ const ThreeScene: React.FC = () => {
   useEffect(() => {
     if (!containerRef.current) return
 
-    let scene = new THREE.Scene()
-    let camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
-    let renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
+    const scene = new THREE.Scene()
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
 
     renderer.setSize(window.innerWidth, window.innerHeight)
     renderer.setClearColor(0x000000, 1)
     containerRef.current.appendChild(renderer.domElement)
 
-    let raycaster = new THREE.Raycaster()
-    let mouse = new THREE.Vector2()
-    let boxes: THREE.LineSegments[] = []
+    const raycaster = new THREE.Raycaster()
+    const mouse = new THREE.Vector2()
+    const boxes: THREE.LineSegments[] = []
 
     for (let i = 0; i < 20; i++) {
       const size = Math.random() * 1.5 + 0.8

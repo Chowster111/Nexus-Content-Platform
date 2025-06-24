@@ -1,9 +1,10 @@
 # routes/search.py
 from fastapi import APIRouter, Query
 from sentence_transformers import util
+
 from db.supabase_client import supabase
+
 from .utils.embedding_utils import safe_encode, semantic_model
-import numpy as np
 
 router = APIRouter()
 

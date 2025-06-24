@@ -1,11 +1,12 @@
-from db.supabase_client import supabase
 import math
-from scraper.tinder import TinderScraper
-from scraper.netflix import NetflixScraper
-from scraper.airbnb import AirbnbScraper
-from scraper.stripe import StripeScraper
-from scraper.uber import UberScraper
+
+from db.supabase_client import supabase
 from engine.summary import summarize
+from scraper.airbnb import AirbnbScraper
+from scraper.netflix import NetflixScraper
+from scraper.stripe import StripeScraper
+from scraper.tinder import TinderScraper
+from scraper.uber import UberScraper
 
 SCRAPER_MAP = {
     "netflix": NetflixScraper,

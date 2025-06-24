@@ -26,4 +26,5 @@ python-dateutil
 
 # Optional: typing stubs and dev tools
 types-requests
+ruff
 

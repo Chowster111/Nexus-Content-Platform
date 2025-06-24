@@ -3,7 +3,6 @@ import styles from '../styles/Results.module.css'
 import { ResultItem } from '../App'
 import { motion } from 'framer-motion'
 import { formatDistanceToNow, format } from 'date-fns'
-import Skeleton from 'react-loading-skeleton'
 import 'react-loading-skeleton/dist/skeleton.css'
 
 

@@ -1,6 +1,8 @@
 # uber_scraper.py
 from datetime import datetime
+
 from bs4 import BeautifulSoup
+
 from .baseScraper import BaseBlogScraper
 
 device = "cpu"
