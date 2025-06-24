@@ -176,11 +176,10 @@ All tests are located under `backend/tests/`.
 ---
 ### Testing Done
 
-![Lint Status](https://img.shields.io/badge/lint-passing-brightgreen)]
+![Lint Status](https://img.shields.io/badge/lint-passing-brightgreen)
 [![Tests](https://img.shields.io/badge/tests-passing-brightgreen)](https://github.com/yourusername/engineering-blog-recommender/actions)
 [![Docker](https://img.shields.io/badge/docker-ready-blue)](https://hub.docker.com/repository/docker/yourusername/engineering-blog-recommender)
 [![License](https://img.shields.io/github/license/yourusername/engineering-blog-recommender)](LICENSE)
-[![Last Updated](https://img.shields.io/github/last-commit/yourusername/engineering-blog-recommender)](https://github.com/yourusername/engineering-blog-recommender)
 
 
 
