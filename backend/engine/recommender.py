@@ -1,6 +1,7 @@
-from sentence_transformers import SentenceTransformer, util
-from db.supabase_client import supabase
 import torch
+from sentence_transformers import SentenceTransformer, util
+
+from db.supabase_client import supabase
 
 model = SentenceTransformer("BAAI/bge-base-en-v1.5")
 device = torch.device("cpu")

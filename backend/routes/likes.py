@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Query, HTTPException, Request
+from fastapi import APIRouter, Request
+
 from db.supabase_client import supabase
 
 router = APIRouter()

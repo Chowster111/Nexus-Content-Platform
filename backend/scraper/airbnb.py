@@ -1,5 +1,6 @@
-from .baseScraper import BaseBlogScraper
 from datetime import datetime
+
+from .baseScraper import BaseBlogScraper
 
 device = "cpu"
 class AirbnbScraper(BaseBlogScraper):

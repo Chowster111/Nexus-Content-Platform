@@ -1,6 +1,8 @@
 from http.client import HTTPException
+
 from fastapi import APIRouter
-from .utils.trigger_scrape import trigger_scrape, SCRAPER_MAP
+
+from .utils.trigger_scrape import SCRAPER_MAP, trigger_scrape
 
 router = APIRouter()
 
