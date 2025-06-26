@@ -60,15 +60,13 @@ The frontend is a modern React app built with:
 | User Auth Integration        | Full authentication flow with Supabase Auth                               |
 | Likes Persistence            | Stores user-specific like/dislike data for future personalization         |
 | FastAPI Backend              | Modular, production-ready Python API framework                            |
-
-
----
-
-## Observability +  Error Handling + Logging + Health
 | Logging                      | Super-granular request and error logging using structured Python logging  |
 | Healthcheck Endpoint         | Startup, database, and latency verification with Prometheus-friendly output |
 | Retry Logic                  | Exponential backoff and retry on failures (e.g. database insertions)      |
 | Observability                | Built-in Prometheus metrics endpoint with a Grafana dashboard             |
+
+
+---
 
 ## Project Structure
 
