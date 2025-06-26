@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Query
-
 from engine.recommender import recommend_articles
+from logging_config import logger
 
 router = APIRouter()
 
@@ -10,11 +10,12 @@ def get_recommendations(
     top_k: int = Query(5),
     user_id: str = Query(None)
 ):
+    logger.info(f"📥 Incoming recommendation request | query='{query}', user_id={user_id}")
+    
     try:
-        print(f"📥 Incoming query: {query}, user_id: {user_id}")
         results = recommend_articles(query, top_k=top_k, user_id=user_id)
-        print(f"✅ Found {len(results)} recommendations")
+        logger.info(f"✅ Returning {len(results)} recommendations")
         return {"results": results}
     except Exception as e:
-        print(f"❌ Error: {e}")
+        logger.exception("❌ Error generating recommendations")
         return {"error": str(e)}
