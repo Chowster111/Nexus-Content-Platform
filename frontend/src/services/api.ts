@@ -2,7 +2,13 @@ import axios from 'axios'
 import { ResultItem } from '../App'
 
 const API_BASE = '/api'
+export interface SourceAnalytics {
+  sources: [string, number][]
+}
 
+export interface CategoryAnalytics {
+  categories: [string, number][]
+}
 export async function searchArticles(query: string): Promise<ResultItem[]> {
   const res = await axios.get(`${API_BASE}/search/articles`, {
     params: { q: query },
@@ -18,4 +24,15 @@ export async function recommendArticles(query: string, userId?: string): Promise
     params,
   })
   return res.data || []
+}
+
+
+export async function fetchSourceAnalytics(limit = 5): Promise<[string, number][]> {
+  const res = await axios.get(`${API_BASE}/analytics/blogs-by-source/${limit}`)
+  return res.data.sources || []
+}
+
+export async function fetchCategoryAnalytics(): Promise<[string, number][]> {
+  const res = await axios.get(`${API_BASE}/analytics/category-count`)
+  return res.data.categories || []
 }

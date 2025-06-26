@@ -67,3 +67,60 @@
 .toggle.checked .thumb {
   transform: translateX(24px);
 }
+
+.analyticsBox {
+  max-width: 720px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  text-align: center;
+  border-radius: 12px;
+  background-color: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+}
+
+.analyticsTitle {
+  font-size: 1.4rem;
+  margin-bottom: 1rem;
+}
+
+.analyticsSection {
+  display: flex;
+  justify-content: space-around;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.analyticsSection ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.analyticsSection li {
+  margin: 0.4rem 0;
+}
+
+
+.analyticsRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.analyticsTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.5rem;
+}
+
+.analyticsTable th,
+.analyticsTable td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #555;
+  text-align: left;
+}

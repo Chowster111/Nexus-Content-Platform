@@ -1,10 +1,8 @@
-# analytics.py
 from collections import defaultdict
 from datetime import datetime, timedelta
-
 from fastapi import APIRouter, HTTPException, Query
-
 from db.supabase_client import supabase
+from logging_config import logger
 
 router = APIRouter()
 
@@ -13,36 +11,35 @@ def blogs_by_source(limit: int = 25):
     try:
         response = supabase.table("articles").select("*").order("published_date", desc=True).execute()
     except Exception as e:
-        print(f"Error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
     articles = response.data
-    source_count = {}
+    source_count = defaultdict(int)
 
     for article in articles:
         source = article.get("source", "Unknown")
-        source_count[source] = source_count.get(source, 0) + 1
+        source_count[source] += 1
 
     sorted_sources = sorted(source_count.items(), key=lambda x: x[1], reverse=True)
     return {"sources": sorted_sources[:limit]}
 
 
-@router.get("/most-common-tags/{limit}")
+@router.get("/tag-count")
 def common_tags(limit: int = 10):
     try:
         response = supabase.table("articles").select("*").order("published_date", desc=True).execute()
     except Exception as e:
-        print(f"Error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
     articles = response.data
-    tag_count = {}
+    tag_count = defaultdict(int)
 
     for article in articles:
-        tags = article.get("tags", [])
+        tags = article.get("tags") or []
+        if isinstance(tags, str):  # handle comma-separated string
+            tags = [t.strip() for t in tags.split(",") if t.strip()]
         for tag in tags:
-            tag = tag.lower()
-            tag_count[tag] = tag_count.get(tag, 0) + 1
+            tag_count[tag.lower()] += 1
 
     sorted_tags = sorted(tag_count.items(), key=lambda x: x[1], reverse=True)
     return {"tags": sorted_tags[:limit]}
@@ -50,10 +47,12 @@ def common_tags(limit: int = 10):
 
 @router.get("/category-count")
 def get_article_count_by_category():
+    logger.info("Fetching article count by category")
+
     try:
         result = supabase.table("articles").select("category").execute()
     except Exception as e:
-        print(f"Error: {e}")
+        logger.exception("❌ Failed to fetch categories")
         raise HTTPException(status_code=500, detail=str(e))
 
     category_counts = {}
@@ -61,47 +60,52 @@ def get_article_count_by_category():
         cat = row["category"]
         category_counts[cat] = category_counts.get(cat, 0) + 1
 
-    return {"category_counts": category_counts}
+    logger.info(f"✅ Category counts: {category_counts}")
+    sorted_categories = sorted(category_counts.items(), key=lambda x: x[1], reverse=True)
+    return {"categories": sorted_categories}
 
 
-@router.get("/articles-by-month")
-def get_articles_by_month():
+
+@router.get("/blogs-by-source/{limit}")
+def blogs_by_source(limit: int = 25):
+    logger.info(f"📊 Fetching blogs by source with limit={limit}")
+
     try:
-        response = supabase.table("articles").select("published_date").execute()
+        response = supabase.table("articles").select("*").order("published_date", desc=True).execute()
     except Exception as e:
-        print(f"Error: {e}")
+        logger.exception("❌ Failed to fetch articles for source analysis")
         raise HTTPException(status_code=500, detail=str(e))
 
-    monthly_counts = defaultdict(int)
+    articles = response.data
+    logger.info(f"📄 Retrieved {len(articles)} articles")
 
-    for row in response.data:
-        if row["published_date"]:
-            dt = datetime.fromisoformat(row["published_date"])
-            key = dt.strftime("%Y-%m")  # Format: "2025-06"
-            monthly_counts[key] += 1
+    source_count = {}
+    for article in articles:
+        source = article.get("source", "Unknown")
+        source_count[source] = source_count.get(source, 0) + 1
 
-    return dict(sorted(monthly_counts.items()))
+    sorted_sources = sorted(source_count.items(), key=lambda x: x[1], reverse=True)
+    logger.info(f"✅ Top sources: {sorted_sources[:limit]}")
+    return {"sources": sorted_sources[:limit]}
+
 
 
 @router.get("/most-recent/{topk}")
 def get_most_recent(topk: int = 20):
     try:
-        response = supabase.table("articles").select("*").order("published_date", desc=True).execute()
+        response = supabase.table("articles").select("*").order("published_date", desc=True).limit(topk).execute()
     except Exception as e:
-        print(f"Error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-    topk = min(topk, len(response.data))
-    articles = response.data[:topk]
-
+    articles = response.data or []
     return [
         {
-            "title": article["title"],
-            "url": article["url"],
-            "published_date": article["published_date"],
-            "source": article["source"]
+            "title": a.get("title"),
+            "url": a.get("url"),
+            "published_date": a.get("published_date"),
+            "source": a.get("source", "Unknown"),
         }
-        for article in articles
+        for a in articles
     ]
 
 
@@ -121,15 +125,15 @@ def trending_tags(
     try:
         response = supabase.table("articles").select("*").gte("published_date", since.isoformat()).execute()
     except Exception as e:
-        print(f"Error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-    tag_count = {}
+    tag_count = defaultdict(int)
     for article in response.data:
-        tags = article.get("tags", [])
+        tags = article.get("tags") or []
+        if isinstance(tags, str):
+            tags = [t.strip() for t in tags.split(",") if t.strip()]
         for tag in tags:
-            tag = tag.lower()
-            tag_count[tag] = tag_count.get(tag, 0) + 1
+            tag_count[tag.lower()] += 1
 
     top_tags = sorted(tag_count.items(), key=lambda x: x[1], reverse=True)[:top_n]
     return {"period": period, "top_tags": top_tags}
