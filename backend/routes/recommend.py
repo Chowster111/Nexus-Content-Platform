@@ -6,7 +6,7 @@ from .utils.retry import with_backoff
 router = APIRouter()
 
 @with_backoff()
-def get_recommendation_results(query: str, top_k: int, user_id: str | None):
+def get_recommendation_results(query: str, top_k: int, user_id):
     return recommend_articles(query, top_k=top_k, user_id=user_id)
 
 @router.get("/recommend")
