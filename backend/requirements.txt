@@ -28,3 +28,8 @@ python-dateutil
 types-requests
 ruff
 
+# Retry Backoff Logic
+tenacity>=8.0.0
+
+# Observability
+prometheus-fastapi-instrumentator  
