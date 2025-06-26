@@ -2,13 +2,17 @@
 
 This is a full-stack AI system that gathers, classifies, tags, embeds, and recommends over 10,000 articles from leading engineering blogs including Netflix, Airbnb, Uber, Stripe, and more.
 
-### Features:
+### Features
 
 * Semantic search and exploration of engineering articles
 * AI-powered article recommendations
-* Content preview, swipe-to-like interface
+* Content preview and swipe-to-like interface
 * User authentication and per-user like tracking
 * Recommendations personalized using user likes
+* Observability stack with Grafana and Prometheus for real-time metrics
+* Robust logging and error handling across backend services
+* Exponential backoff and retry logic on all critical API/database calls
+* Production-grade health check endpoint with external service validation
 
 ---
 
@@ -56,18 +60,25 @@ The frontend is a modern React app built with:
 | User Auth Integration        | Full authentication flow with Supabase Auth                               |
 | Likes Persistence            | Stores user-specific like/dislike data for future personalization         |
 | FastAPI Backend              | Modular, production-ready Python API framework                            |
+| Logging                      | Super-granular request and error logging using structured Python logging  |
+| Healthcheck Endpoint         | Startup, database, and latency verification with Prometheus-friendly output |
+| Retry Logic                  | Exponential backoff and retry on failures (e.g. database insertions)      |
+| Observability                | Built-in Prometheus metrics endpoint with a Grafana dashboard             |
 
 ---
 
 ## Project Structure
 
 ```
+
 .
 ├── backend/                   # FastAPI backend
 │   ├── engine/                # Recommender system logic
 │   ├── routes/                # API route handlers
+│   ├── utils/                 # Logging, retry, healthcheck, observability
 │   ├── tests/                 # Unit, integration, and deployment tests
-│   └── main.py
+│   ├── main.py
+│   └── logging\_config.py
 │
 ├── frontend/                  # React frontend (Vite + TypeScript)
 │   ├── components/
@@ -75,7 +86,7 @@ The frontend is a modern React app built with:
 │   └── App.tsx
 │
 ├── db/
-│   └── supabase_client.py
+│   └── supabase\_client.py
 │
 ├── scrapers/
 │   ├── netflix.py
@@ -84,7 +95,8 @@ The frontend is a modern React app built with:
 ├── docker-compose.yml
 ├── .env
 └── README.md
-```
+
+````
 
 ---
 
@@ -95,7 +107,7 @@ The frontend is a modern React app built with:
 ```bash
 git clone https://github.com/yourusername/engineering-blog-recommender.git
 cd engineering-blog-recommender
-```
+````
 
 ### 2. Create `.env` File
 
@@ -117,20 +129,24 @@ This will:
 
 * Start the FastAPI backend at `http://localhost:8000`
 * Serve the React frontend at `http://localhost:3000` (proxying API calls)
+* Enable Prometheus metrics at `/metrics`
 * Connect to Supabase and HuggingFace via your `.env` credentials
+* Expose Grafana dashboard at `http://localhost:3001` for observability
 
 ---
 
 ## API Endpoints
 
-| Endpoint                    | Description                      |
-| --------------------------- | -------------------------------- |
-| `/api/scrape/netflix`       | Scrapes Netflix Engineering blog |
-| `/api/recommend`            | Recommends similar articles      |
-| `/api/search/articles`      | Searches articles by keyword     |
-| `/api/user/likes`           | Stores likes/dislikes for a user |
-| `/api/analytics/tags`       | Returns most frequent tags       |
-| `/api/analytics/categories` | Returns distribution by category |
+| Endpoint                    | Description                             |
+| --------------------------- | --------------------------------------- |
+| `/api/scrape/netflix`       | Scrapes Netflix Engineering blog        |
+| `/api/recommend`            | Recommends similar articles             |
+| `/api/search/articles`      | Searches articles by keyword            |
+| `/api/user/likes`           | Stores likes/dislikes for a user        |
+| `/api/analytics/tags`       | Returns most frequent tags              |
+| `/api/analytics/categories` | Returns distribution by category        |
+| `/health`                   | Full healthcheck for service + database |
+| `/metrics`                  | Prometheus metrics endpoint             |
 
 ---
 
@@ -165,6 +181,18 @@ All tests are located under `backend/tests/`.
 
 ---
 
+## Observability and Reliability
+
+This project includes a complete observability stack for production-grade monitoring and diagnostics.
+
+* **Grafana Dashboard** — Visualize API health, request latency, and user traffic patterns
+* **Prometheus Exporter** — Exposes metrics at `/metrics` compatible with Prometheus scrapers
+* **Structured Logging** — Logs include detailed request context, errors, and retry attempts
+* **Healthcheck Endpoint** — Checks DB connectivity and API readiness
+* **Retry and Backoff** — All critical operations (e.g. likes, Supabase writes) use automatic retries with exponential backoff to reduce failure rates
+
+---
+
 ## Data Sources
 
 * [Netflix Tech Blog](https://netflixtechblog.com/)
@@ -174,15 +202,17 @@ All tests are located under `backend/tests/`.
 * [Tinder Engineering](https://medium.com/tinder)
 
 ---
-### Testing Done
+
+## Status
 
 ![Lint Status](https://img.shields.io/badge/lint-passing-brightgreen)
 [![Tests](https://img.shields.io/badge/tests-passing-brightgreen)](https://github.com/yourusername/engineering-blog-recommender/actions)
 [![Docker](https://img.shields.io/badge/docker-ready-blue)](https://hub.docker.com/repository/docker/yourusername/engineering-blog-recommender)
 [![License](https://img.shields.io/github/license/yourusername/engineering-blog-recommender)](LICENSE)
 
-
+---
 
 ## Author
 
-Built by Arijit Chowdhury
+Built by Arijit Chowdhury — Full-stack developer with experience in AI systems, scalable infrastructure, and end-to-end product delivery.
+
