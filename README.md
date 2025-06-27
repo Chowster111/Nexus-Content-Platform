@@ -64,6 +64,7 @@ The frontend is a modern React app built with:
 | Healthcheck Endpoint         | Startup, database, and latency verification with Prometheus-friendly output |
 | Retry Logic                  | Exponential backoff and retry on failures (e.g. database insertions)      |
 | Observability                | Built-in Prometheus metrics endpoint with a Grafana dashboard             |
+| Load Balancing               | Used Nginx for load balancing when deployed onto docker and AWS           |
 
 
 ---
