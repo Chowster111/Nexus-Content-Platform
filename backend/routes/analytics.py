@@ -1,6 +1,7 @@
 from collections import defaultdict
 from datetime import datetime, timedelta
 from fastapi import APIRouter, HTTPException, Query
+from fastapi.responses import JSONResponse
 from db.supabase_client import supabase
 from logging_config import logger
 from .utils.retry import with_backoff
@@ -15,14 +16,7 @@ def fetch_articles():
 def fetch_categories():
     return supabase.table("articles").select("category").execute()
 
-@with_backoff(max_retries=3, backoff_factor=0.5)
-def fetch_recent_articles(topk: int):
-    return supabase.table("articles").select("*").order("published_date", desc=True).limit(topk).execute()
-
-@with_backoff(max_retries=3, backoff_factor=0.5)
-def fetch_since(date: str):
-    return supabase.table("articles").select("*").gte("published_date", date).execute()
-
+# ---
 
 @router.get("/blogs-by-source/{limit}")
 def blogs_by_source(limit: int = 25):
@@ -43,8 +37,11 @@ def blogs_by_source(limit: int = 25):
 
     sorted_sources = sorted(source_count.items(), key=lambda x: x[1], reverse=True)
     logger.info(f"✅ Top sources: {sorted_sources[:limit]}")
-    return {"sources": sorted_sources[:limit]}
 
+    return JSONResponse(
+        content={"sources": sorted_sources[:limit]},
+        headers={"Cache-Control": "public, max-age=600"}
+    )
 
 @router.get("/category-count")
 def get_article_count_by_category():
@@ -62,4 +59,8 @@ def get_article_count_by_category():
 
     sorted_categories = sorted(category_counts.items(), key=lambda x: x[1], reverse=True)
     logger.info(f"✅ Category counts: {sorted_categories}")
-    return {"categories": sorted_categories}
+
+    return JSONResponse(
+        content={"categories": sorted_categories},
+        headers={"Cache-Control": "public, max-age=600"}
+    )
