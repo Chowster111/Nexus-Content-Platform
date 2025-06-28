@@ -82,8 +82,10 @@ const Home = () => {
   useEffect(() => {
     async function loadAnalytics() {
       try {
-        const sourceData = await fetchSourceAnalytics()
-        const categoryData = await fetchCategoryAnalytics()
+        const [sourceData, categoryData] = await Promise.all([
+          fetchSourceAnalytics(),
+          fetchCategoryAnalytics(),
+        ])
         setSources(sourceData)
         setCats(categoryData)
       } catch (e) {
