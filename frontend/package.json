@@ -9,6 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@sentry/react": "^9.33.0",
+    "@sentry/tracing": "^7.120.3",
     "@supabase/supabase-js": "^2.50.0",
     "axios": "^1.10.0",
     "date-fns": "^4.1.0",
