@@ -1,7 +1,7 @@
 // src/pages/Home.tsx
 import React, { useState, useRef, useEffect } from 'react'
 import styles from '../styles/App.module.css'
-import { saveUserLikes } from '../services/likes'
+import { saveUserLikes } from '../services/likesClient'
 import ThreeScene from '../components/ThreeScene'
 import Header from '../components/Header'
 import ToggleSwitch from '../components/ToggleSwitch'
