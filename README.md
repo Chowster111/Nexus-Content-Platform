@@ -1,201 +1,211 @@
-# Engineering Blog Recommender
+# 🚀 Engineering Blog Recommender
 
-This is a full-stack AI system that gathers, classifies, tags, embeds, and recommends over 10,000 articles from leading engineering blogs including Netflix, Airbnb, Uber, Stripe, and more.
-
-### Features
-
-* Semantic search and exploration of engineering articles
-* AI-powered article recommendations
-* Content preview and swipe-to-like interface
-* User authentication and per-user like tracking
-* Recommendations personalized using user likes
-* Observability stack with Grafana and Prometheus for real-time metrics
-* Robust logging and error handling across backend services
-* Exponential backoff and retry logic on all critical API/database calls
-* Production-grade health check endpoint with external service validation
+**A production-ready, AI-powered content recommendation system that discovers, classifies, tags, embeds, and delivers over 10,000 articles from world-leading engineering blogs.**  
+Built for real-time semantic search, personalized recommendations, and developer insights — with scalable architecture, robust error handling, and modern observability baked in.
 
 ---
 
-## Screenshots
+## 🎯 Why This Project Exists
 
-### Homepage
+Engineering blogs hold deep technical knowledge that is often hard to search and surface intelligently.  
+This system acts as an **AI-driven semantic layer** for engineering content, providing:
 
-![Homepage Screenshot](screenshots/homePage.png)
-
-### Results
-
-![Homesearch Screenshot](screenshots/homeScroll.png)
-
-### Swipe Mode
-
-![Swipe Mode](screenshots/homeSwipe.png)
+✅ Fast, relevant recommendations powered by state-of-the-art embeddings  
+✅ A frictionless swipe-to-like UX to personalize results  
+✅ Insights into what technologies and categories are trending  
+✅ Open APIs for future integrations (Slack bots, newsletters, RSS feeds)
 
 ---
 
-## Frontend (React + TypeScript)
+## ✨ Highlights — What’s Under the Hood
 
-The frontend is a modern React app built with:
-
-* TypeScript + Vite
-* Framer Motion for animations
-* CSS Modules for scoped styling
-* `react-loading-skeleton` for async placeholders
-* Swipe Mode: Tinder-style swipe-to-like experience
-* Toggle UI: Switch between search and personalized recommendation views
-* Auth-aware UI: Likes are tied to authenticated users
-
----
-
-## Backend Features
-
-| Feature                      | Description                                                               |
-| ---------------------------- | ------------------------------------------------------------------------- |
-| Blog Scraper                 | Collects articles using Selenium and BeautifulSoup                        |
-| Semantic Classification      | Uses BGE embeddings + cosine similarity to classify articles              |
-| Automatic Tagging            | Uses KeyBERT to extract relevant tags                                     |
-| Supabase Integration         | Stores article metadata, embeddings, and user likes in hosted Postgres DB |
-| Search                       | Search articles by keyword, tag, or source                                |
-| Personalized Recommendations | Suggests similar articles using user likes and embeddings                 |
-| Analytics API                | Provides trending tags, top sources, and article category statistics      |
-| User Auth Integration        | Full authentication flow with Supabase Auth                               |
-| Likes Persistence            | Stores user-specific like/dislike data for future personalization         |
-| FastAPI Backend              | Modular, production-ready Python API framework                            |
-| Logging                      | Super-granular request and error logging using structured Python logging  |
-| Healthcheck Endpoint         | Startup, database, and latency verification with Prometheus-friendly output |
-| Retry Logic                  | Exponential backoff and retry on failures (e.g. database insertions)      |
-| Observability                | Built-in Prometheus metrics endpoint with a Grafana dashboard             |
-| Load Balancing               | Used Nginx for load balancing when deployed onto docker and AWS           |
-
+- **Full-stack TypeScript & Python** — React + Vite frontend, FastAPI backend, Supabase Postgres.
+- **Semantic Search** — Uses BAAI BGE embeddings + cosine similarity for relevance ranking.
+- **Automatic Tagging** — KeyBERT and BART summarization pipeline for category extraction.
+- **User Likes & Auth** — Supabase Auth, storing likes/dislikes to drive personalization.
+- **Swipe Mode** — Mobile-inspired, Tinder-like swipe-to-like experience.
+- **Observability** — Grafana dashboards, Prometheus metrics, structured logging.
+- **Robustness** — Exponential backoff, retry logic on all critical paths, Sentry error tracking.
+- **Scalable I/O** — Nginx reverse proxy and Docker Compose orchestration for dev/prod.
+- **Edge-Caching Friendly** — Responses for analytics endpoints support CDN caching.
 
 ---
 
-## Project Structure
+## 📷 Screenshots
+
+| Home | Search Results | Swipe Mode |
+|------|----------------|-------------|
+| ![Home](screenshots/homePage.png) | ![Results](screenshots/homeScroll.png) | ![Swipe](screenshots/homeSwipe.png) |
+
+---
+
+## 🗺️ Full Feature Set
+
+✅ **Semantic Search** — Vector embeddings for natural language queries.  
+✅ **Personalized Recommendations** — Recommender logic considers user likes.  
+✅ **Swipe-to-Like UI** — Save relevant content with a simple swipe gesture.  
+✅ **Auth-Aware UI** — Only saves likes for authenticated users.  
+✅ **Super-Granular Logging** — Tracks retries, errors, user actions.  
+✅ **Observability** — Metrics exported via Prometheus, visualized in Grafana.  
+✅ **Healthchecks** — Startup and DB connectivity checks for readiness probes.  
+✅ **Retry with Exponential Backoff** — For all Supabase inserts and critical calls.  
+✅ **Sentry on Frontend** — Automatic JS error tracking, release version tagging.  
+✅ **Edge-Ready Analytics** — Cached popular sources/tags for fast rendering.
+
+---
+
+## ⚙️ Technologies Used
+
+| Layer             | Tech Stack                                                                                                 |
+|-------------------|------------------------------------------------------------------------------------------------------------|
+| **Frontend**      | React, Vite, TypeScript, Framer Motion, CSS Modules, `react-loading-skeleton`, Supabase Auth, Sentry SDK   |
+| **Backend**       | FastAPI, Python 3.11+, Supabase (Postgres), Hugging Face Transformers, KeyBERT, BART Summarization         |
+| **Scrapers**      | Python, Selenium, BeautifulSoup                                                                            |
+| **Observability** | Prometheus, Grafana, Python Logging, Sentry                                                                |
+| **Infrastructure**| Docker Compose, Nginx reverse proxy/load balancing, .env-based secrets                                     |
+| **Testing**       | Pytest, HTTPX for integration tests, Ruff for linting                                                      |
+
+---
+
+## 🔍 Key Models
+
+- `BAAI/bge-base-en-v1.5` — Sentence embeddings for similarity.
+- `KeyBERT` — Keyword extraction for better tagging.
+- `facebook/bart-large-cnn` — Summarization for concise article abstracts.
+
+---
+
+## 🗃️ API Endpoints
+
+| Endpoint                    | Description                                                          |
+|-----------------------------|----------------------------------------------------------------------|
+| `/api/search/articles`      | Semantic search over all embedded articles                           |
+| `/api/find/recommend`       | Returns recommendations based on query + user likes                  |
+| `/api/user/likes`           | Stores user likes/dislikes                                           |
+| `/api/analytics/blogs-by-source/{limit}` | Most frequent sources, for analytics page                    |
+| `/api/analytics/category-count` | Article distribution by category                                   |
+| `/api/scrape/{source}`      | Trigger scraper for a single source (Netflix, Airbnb, Uber, Stripe) |
+| `/health`                   | Healthcheck for readiness & Supabase DB status                       |
+| `/metrics`                  | Prometheus-compatible metrics export                                 |
+
+---
+
+## ⚡ Observability & Reliability
+
+🟢 **Prometheus** scrapes `/metrics` endpoint for request counts, latency, DB calls.  
+📊 **Grafana** dashboards visualize uptime, error rates, and query throughput.  
+🔒 **Structured Logging** includes timestamps, trace context, retry attempts.  
+🔁 **Retry + Exponential Backoff** prevents cascading failures on transient errors.  
+🔔 **Sentry Frontend Integration** captures JavaScript runtime issues for fast debugging.
+
+---
+
+## 🗂️ Project Structure
 
 ```
 
 .
-├── backend/                   # FastAPI backend
-│   ├── engine/                # Recommender system logic
-│   ├── routes/                # API route handlers
-│   ├── utils/                 # Logging, retry, healthcheck, observability
-│   ├── tests/                 # Unit, integration, and deployment tests
-│   ├── main.py
-│   └── logging\_config.py
+├── backend/
+│   ├── engine/                # Embedding + recommender logic
+│   ├── routes/                # Search, recommend, likes, analytics endpoints
+│   ├── utils/                 # Retry decorators, logging config, healthcheck
+│   ├── main.py                # FastAPI app instance
+│   ├── logging\_config.py
+│   └── tests/                 # Pytest unit & integration tests
 │
-├── frontend/                  # React frontend (Vite + TypeScript)
-│   ├── components/
-│   ├── styles/
-│   └── App.tsx
+├── frontend/
+│   ├── components/            # Reusable UI blocks (Search, Recommend, AnalyticsBox)
+│   ├── pages/                 # Page routing (Home, future pages)
+│   ├── services/              # API & likes client with Sentry integration
+│   ├── styles/                # CSS Modules for isolated styling
+│   ├── App.tsx                # Root wrapper
+│   ├── main.tsx               # Vite entrypoint
 │
-├── db/
-│   └── supabase\_client.py
-│
-├── scrapers/
+├── scrapers/                  # Site-specific scrapers
 │   ├── netflix.py
+│   ├── airbnb.py
 │   └── ...
 │
+├── db/                        # Supabase Postgres client
+│   └── supabase\_client.py
+│
+├── nginx/                     # Nginx reverse proxy config
 ├── docker-compose.yml
-├── .env
+├── .env                       # Secrets for Supabase & HF tokens
 └── README.md
 
 ````
 
+## 🗄️ Backend Stack: FastAPI + Supabase + PostgreSQL
+The backend is built using FastAPI, a modern Python web framework known for its speed, async support, and developer-friendly automatic OpenAPI docs.
+
+All structured data — including articles, embeddings metadata, user likes, and auth records — is stored in a PostgreSQL database hosted via Supabase, which acts as a backend-as-a-service with instant REST endpoints, row-level security, and authentication.
+
+This design means:
+
+✅ Strong typing and validation for all API endpoints via Pydantic models.
+
+✅ Serverless auth & storage — Supabase handles user sessions, JWTs, and real-time updates.
+
+✅ Scalable Postgres — Flexible SQL database with vector extension support if needed.
+
+Together, FastAPI + Supabase + PostgreSQL keep the backend fast, type-safe, and ready to scale — without sacrificing observability, retries, or robust error handling.
+
 ---
 
-## Setup (Docker)
+## 🏗️ Local Setup
 
-### 1. Clone the Repository
+1️⃣ **Clone the repo**
 
 ```bash
 git clone https://github.com/yourusername/engineering-blog-recommender.git
 cd engineering-blog-recommender
 ````
 
-### 2. Create `.env` File
+2️⃣ **Create `.env`**
 
 ```env
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_KEY=your-supabase-key
 HF_API_TOKEN=your-huggingface-token
+SENTRY_DSN=https://YOUR_SENTRY_DSN
 ```
 
-Place this `.env` file in the root directory.
-
-### 3. Run with Docker Compose
+3️⃣ **Run Docker Compose**
 
 ```bash
 docker-compose up --build
 ```
 
-This will:
-
-* Start the FastAPI backend at `http://localhost:8000`
-* Serve the React frontend at `http://localhost:3000` (proxying API calls)
-* Enable Prometheus metrics at `/metrics`
-* Connect to Supabase and HuggingFace via your `.env` credentials
-* Expose Grafana dashboard at `http://localhost:3001` for observability
+* Backend → `http://localhost:8000`
+* Frontend → `http://localhost:3000`
+* Prometheus → `/metrics`
+* Grafana → `http://localhost:3001` (default login: `admin`)
 
 ---
 
-## API Endpoints
+## 🧪 Testing
 
-| Endpoint                    | Description                             |
-| --------------------------- | --------------------------------------- |
-| `/api/scrape/netflix`       | Scrapes Netflix Engineering blog        |
-| `/api/recommend`            | Recommends similar articles             |
-| `/api/search/articles`      | Searches articles by keyword            |
-| `/api/user/likes`           | Stores likes/dislikes for a user        |
-| `/api/analytics/tags`       | Returns most frequent tags              |
-| `/api/analytics/categories` | Returns distribution by category        |
-| `/health`                   | Full healthcheck for service + database |
-| `/metrics`                  | Prometheus metrics endpoint             |
-
----
-
-## Models Used
-
-* `BAAI/bge-base-en-v1.5` — Sentence embeddings for semantic similarity
-* `KeyBERT` — Keyword/tag extraction
-* `facebook/bart-large-cnn` — Summarization model via inference API
-
----
-
-## Example Queries
+✅ **Unit tests** — Core utils, recommender logic
+✅ **Integration tests** — Search, recommend, likes, analytics endpoints
+✅ **Linting** — `ruff` for Python, Prettier for JS/TS
 
 ```bash
-curl http://localhost:8000/find/recommend?query=GraphQL
-curl http://localhost:8000/search/articles?q=Machine+Learning
+pytest backend/tests
 ```
 
 ---
 
-## Testing Infrastructure
+## 💡 Example Queries
 
-| Test Type         | Coverage Area                                  |
-| ----------------- | ---------------------------------------------- |
-| Linting           | Code formatting using Ruff                     |
-| Unit Tests        | Utility functions, schema validation           |
-| Integration Tests | API endpoints (auth, likes, search, recommend) |
-| Deployment Tests  | Smoke tests to verify deployed API health      |
-| Test Frameworks   | Pytest + HTTPX                                 |
-
-All tests are located under `backend/tests/`.
+```bash
+curl 'http://localhost:8000/find/recommend?query=GraphQL'
+curl 'http://localhost:8000/search/articles?q=Machine+Learning'
+```
 
 ---
 
-## Observability and Reliability
-
-This project includes a complete observability stack for production-grade monitoring and diagnostics.
-
-* **Grafana Dashboard** — Visualize API health, request latency, and user traffic patterns
-* **Prometheus Exporter** — Exposes metrics at `/metrics` compatible with Prometheus scrapers
-* **Structured Logging** — Logs include detailed request context, errors, and retry attempts
-* **Healthcheck Endpoint** — Checks DB connectivity and API readiness
-* **Retry and Backoff** — All critical operations (e.g. likes, Supabase writes) use automatic retries with exponential backoff to reduce failure rates
-
----
-
-## Data Sources
+## 📈 Data Sources
 
 * [Netflix Tech Blog](https://netflixtechblog.com/)
 * [Airbnb Engineering](https://medium.com/airbnb-engineering)
@@ -205,16 +215,30 @@ This project includes a complete observability stack for production-grade monito
 
 ---
 
-## Status
+## 🚀 What’s Next
 
-![Lint Status](https://img.shields.io/badge/lint-passing-brightgreen)
-[![Tests](https://img.shields.io/badge/tests-passing-brightgreen)](https://github.com/yourusername/engineering-blog-recommender/actions)
-[![Docker](https://img.shields.io/badge/docker-ready-blue)](https://hub.docker.com/repository/docker/yourusername/engineering-blog-recommender)
-[![License](https://img.shields.io/github/license/yourusername/engineering-blog-recommender)](LICENSE)
+* ⚙️ Caching layers for heavy analytics endpoints.
+* 🕸️ Edge deployment using CDN edge functions.
+* 🗂️ New pages scaffolded under `src/pages/` with React Router for future features.
+* 🛡️ Better role-based auth and multi-user dashboards.
 
 ---
 
-## Author
+## ✅ Status
 
-Built by Arijit Chowdhury — Full-stack developer with experience in AI systems, scalable infrastructure, and end-to-end product delivery.
+![Lint Status](https://img.shields.io/badge/lint-passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-passing-brightgreen)
+![Docker](https://img.shields.io/badge/docker-ready-blue)
+![License](https://img.shields.io/github/license/yourusername/engineering-blog-recommender)
 
+---
+
+## 🏆 Author
+
+Built by **Arijit Chowdhury**
+🚀 Full-stack engineer | AI systems | Scalable backend | Observability-first mindset
+
+---
+
+**Clone. Run. Observe. Ship.**
+Production-grade AI infra for engineering content discovery. ✨
