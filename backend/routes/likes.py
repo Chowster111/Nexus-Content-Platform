@@ -17,7 +17,7 @@ class LikesController:
                 likes = body.get("likes", [])
 
                 if not user_id or not isinstance(likes, list):
-                    logger.warning(f"⚠️ Invalid payload received: {body}")
+                    logger.warning(f"INVALID payload received: {body}")
                     raise HTTPException(status_code=400, detail="Missing user_id or likes list")
 
                 insert_payload = [
@@ -32,14 +32,14 @@ class LikesController:
                 if insert_payload:
                     self.insert_likes(insert_payload)
 
-                logger.info(f"👍 Saved {len(insert_payload)} likes for user {user_id}")
+                logger.info(f"SAVED {len(insert_payload)} likes for user {user_id}")
                 return {"message": f"{len(insert_payload)} likes saved"}
 
             except Exception as e:
-                logger.exception("❌ Failed to save likes")
+                logger.exception("ERROR: Failed to save likes")
                 raise HTTPException(status_code=500, detail="Internal server error")
 
     @with_backoff()
     def insert_likes(self, payload):
-        logger.info(f"📥 Inserting {len(payload)} likes into Supabase")
+        logger.info(f"SUCCESS Inserting {len(payload)} likes into Supabase")
         supabase.table("likes").insert(payload).execute()

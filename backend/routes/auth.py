@@ -19,7 +19,7 @@ class AuthController:
     def register_routes(self):
         @self.router.post("/signup")
         def signup(data: SignupRequest):
-            logger.info(f"📥 Signup attempt for email: {data.email}")
+            logger.info(f"AUTH Signup attempt for email: {data.email}")
             try:
                 res = supabase.auth.sign_up({
                     "email": data.email,
@@ -27,7 +27,7 @@ class AuthController:
                 })
 
                 if res.get("error"):
-                    logger.warning(f"⚠️ Supabase signup error: {res['error']['message']}")
+                    logger.warning(f"ERROR Supabase signup error: {res['error']['message']}")
                     raise HTTPException(status_code=400, detail=res["error"]["message"])
 
                 user = res["user"]
@@ -39,16 +39,16 @@ class AuthController:
                         "email": data.email
                     }).execute()
 
-                logger.info(f"✅ User created with ID: {user['id'] if user else 'Unknown'}")
+                logger.info(f"AUTH User created with ID: {user['id'] if user else 'Unknown'}")
                 return {"message": "User created", "user": user}
 
             except Exception as e:
-                logger.exception("❌ Exception during signup")
+                logger.exception("ERROR Exception during signup")
                 raise HTTPException(status_code=500, detail=str(e))
 
         @self.router.post("/signin")
         def signin(data: SigninRequest):
-            logger.info(f"📥 Signin attempt for email: {data.email}")
+            logger.info(f"Signin attempt for email: {data.email}")
             try:
                 res = supabase.auth.sign_in_with_password({
                     "email": data.email,
@@ -56,11 +56,11 @@ class AuthController:
                 })
 
                 if res.get("error"):
-                    logger.warning(f"⚠️ Invalid signin: {res['error']['message']}")
+                    logger.warning(f"ERROR Invalid signin: {res['error']['message']}")
                     raise HTTPException(status_code=401, detail=res["error"]["message"])
 
                 session = res["session"]
-                logger.info(f"✅ Signin successful for user: {session['user']['id']}")
+                logger.info(f"SUCCESS Signin successful for user: {session['user']['id']}")
                 return {
                     "message": "Signed in",
                     "access_token": session["access_token"],
@@ -69,5 +69,5 @@ class AuthController:
                 }
 
             except Exception as e:
-                logger.exception("❌ Exception during signin")
+                logger.exception("Exception during signin")
                 raise HTTPException(status_code=500, detail=str(e))
