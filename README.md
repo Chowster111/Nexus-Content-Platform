@@ -1,23 +1,23 @@
-# 🚀 Engineering Blog Recommender
+# Engineering Blog Recommender
 
 **A production-ready, AI-powered content recommendation system that discovers, classifies, tags, embeds, and delivers over 10,000 articles from world-leading engineering blogs.**  
 Built for real-time semantic search, personalized recommendations, and developer insights — with scalable architecture, robust error handling, and modern observability baked in.
 
 ---
 
-## 🎯 Why This Project Exists
+## Why This Project Exists
 
 Engineering blogs hold deep technical knowledge that is often hard to search and surface intelligently.  
 This system acts as an **AI-driven semantic layer** for engineering content, providing:
 
-✅ Fast, relevant recommendations powered by state-of-the-art embeddings  
-✅ A frictionless swipe-to-like UX to personalize results  
-✅ Insights into what technologies and categories are trending  
-✅ Open APIs for future integrations (Slack bots, newsletters, RSS feeds)
+- Fast, relevant recommendations powered by state-of-the-art embeddings  
+- A frictionless swipe-to-like UX to personalize results  
+- Insights into what technologies and categories are trending  
+- Open APIs for future integrations (Slack bots, newsletters, RSS feeds)
 
 ---
 
-## ✨ Highlights — What’s Under the Hood
+## Highlights — What’s Under the Hood
 
 - **Full-stack TypeScript & Python** — React + Vite frontend, FastAPI backend, Supabase Postgres.
 - **Semantic Search** — Uses BAAI BGE embeddings + cosine similarity for relevance ranking.
@@ -31,7 +31,7 @@ This system acts as an **AI-driven semantic layer** for engineering content, pro
 
 ---
 
-## 📷 Screenshots
+## Screenshots
 
 | Home | Search Results | Swipe Mode |
 |------|----------------|-------------|
@@ -39,22 +39,22 @@ This system acts as an **AI-driven semantic layer** for engineering content, pro
 
 ---
 
-## 🗺️ Full Feature Set
+## Full Feature Set
 
-✅ **Semantic Search** — Vector embeddings for natural language queries.  
-✅ **Personalized Recommendations** — Recommender logic considers user likes.  
-✅ **Swipe-to-Like UI** — Save relevant content with a simple swipe gesture.  
-✅ **Auth-Aware UI** — Only saves likes for authenticated users.  
-✅ **Super-Granular Logging** — Tracks retries, errors, user actions.  
-✅ **Observability** — Metrics exported via Prometheus, visualized in Grafana.  
-✅ **Healthchecks** — Startup and DB connectivity checks for readiness probes.  
-✅ **Retry with Exponential Backoff** — For all Supabase inserts and critical calls.  
-✅ **Sentry on Frontend** — Automatic JS error tracking, release version tagging.  
-✅ **Edge-Ready Analytics** — Cached popular sources/tags for fast rendering.
+- **Semantic Search** — Vector embeddings for natural language queries.  
+- **Personalized Recommendations** — Recommender logic considers user likes.  
+- **Swipe-to-Like UI** — Save relevant content with a simple swipe gesture.  
+- **Auth-Aware UI** — Only saves likes for authenticated users.  
+- **Super-Granular Logging** — Tracks retries, errors, user actions.  
+- **Observability** — Metrics exported via Prometheus, visualized in Grafana.  
+- **Healthchecks** — Startup and DB connectivity checks for readiness probes.  
+- **Retry with Exponential Backoff** — For all Supabase inserts and critical calls.  
+- **Sentry on Frontend** — Automatic JS error tracking, release version tagging.  
+- **Edge-Ready Analytics** — Cached popular sources/tags for fast rendering.
 
 ---
 
-## ⚙️ Technologies Used
+## Technologies Used
 
 | Layer             | Tech Stack                                                                                                 |
 |-------------------|------------------------------------------------------------------------------------------------------------|
@@ -67,7 +67,7 @@ This system acts as an **AI-driven semantic layer** for engineering content, pro
 
 ---
 
-## 🔍 Key Models
+## Key Models
 
 - `BAAI/bge-base-en-v1.5` — Sentence embeddings for similarity.
 - `KeyBERT` — Keyword extraction for better tagging.
@@ -75,7 +75,7 @@ This system acts as an **AI-driven semantic layer** for engineering content, pro
 
 ---
 
-## 🗃️ API Endpoints
+## API Endpoints
 
 | Endpoint                    | Description                                                          |
 |-----------------------------|----------------------------------------------------------------------|
@@ -90,17 +90,17 @@ This system acts as an **AI-driven semantic layer** for engineering content, pro
 
 ---
 
-## ⚡ Observability & Reliability
+## Observability & Reliability
 
-🟢 **Prometheus** scrapes `/metrics` endpoint for request counts, latency, DB calls.  
-📊 **Grafana** dashboards visualize uptime, error rates, and query throughput.  
-🔒 **Structured Logging** includes timestamps, trace context, retry attempts.  
-🔁 **Retry + Exponential Backoff** prevents cascading failures on transient errors.  
-🔔 **Sentry Frontend Integration** captures JavaScript runtime issues for fast debugging.
+**Prometheus** scrapes `/metrics` endpoint for request counts, latency, DB calls.  
+**Grafana** dashboards visualize uptime, error rates, and query throughput.  
+**Structured Logging** includes timestamps, trace context, retry attempts.  
+**Retry + Exponential Backoff** prevents cascading failures on transient errors.  
+**Sentry Frontend Integration** captures JavaScript runtime issues for fast debugging.
 
 ---
 
-## 🗂️ Project Structure
+## Project Structure
 
 ```
 
@@ -136,33 +136,33 @@ This system acts as an **AI-driven semantic layer** for engineering content, pro
 
 ````
 
-## 🗄️ Backend Stack: FastAPI + Supabase + PostgreSQL
+## Backend Stack: FastAPI + Supabase + PostgreSQL
 The backend is built using FastAPI, a modern Python web framework known for its speed, async support, and developer-friendly automatic OpenAPI docs.
 
 All structured data — including articles, embeddings metadata, user likes, and auth records — is stored in a PostgreSQL database hosted via Supabase, which acts as a backend-as-a-service with instant REST endpoints, row-level security, and authentication.
 
 This design means:
 
-✅ Strong typing and validation for all API endpoints via Pydantic models.
+- Strong typing and validation for all API endpoints via Pydantic models.
 
-✅ Serverless auth & storage — Supabase handles user sessions, JWTs, and real-time updates.
+- Serverless auth & storage — Supabase handles user sessions, JWTs, and real-time updates.
 
-✅ Scalable Postgres — Flexible SQL database with vector extension support if needed.
+- Scalable Postgres — Flexible SQL database with vector extension support if needed.
 
 Together, FastAPI + Supabase + PostgreSQL keep the backend fast, type-safe, and ready to scale — without sacrificing observability, retries, or robust error handling.
 
 ---
 
-## 🏗️ Local Setup
+## Local Setup
 
-1️⃣ **Clone the repo**
+1. **Clone the repo**
 
 ```bash
 git clone https://github.com/yourusername/engineering-blog-recommender.git
 cd engineering-blog-recommender
 ````
 
-2️⃣ **Create `.env`**
+2. **Create `.env`**
 
 ```env
 SUPABASE_URL=https://your-project.supabase.co
@@ -171,7 +171,7 @@ HF_API_TOKEN=your-huggingface-token
 SENTRY_DSN=https://YOUR_SENTRY_DSN
 ```
 
-3️⃣ **Run Docker Compose**
+3.  **Run Docker Compose**
 
 ```bash
 docker-compose up --build
@@ -184,11 +184,11 @@ docker-compose up --build
 
 ---
 
-## 🧪 Testing
+## Testing
 
-✅ **Unit tests** — Core utils, recommender logic
-✅ **Integration tests** — Search, recommend, likes, analytics endpoints
-✅ **Linting** — `ruff` for Python, Prettier for JS/TS
+- **Unit tests** — Core utils, recommender logic
+- **Integration tests** — Search, recommend, likes, analytics endpoints
+- **Linting** — `ruff` for Python, Prettier for JS/TS
 
 ```bash
 pytest backend/tests
@@ -196,7 +196,7 @@ pytest backend/tests
 
 ---
 
-## 💡 Example Queries
+## Example Queries
 
 ```bash
 curl 'http://localhost:8000/find/recommend?query=GraphQL'
@@ -205,7 +205,7 @@ curl 'http://localhost:8000/search/articles?q=Machine+Learning'
 
 ---
 
-## 📈 Data Sources
+## Data Sources
 
 * [Netflix Tech Blog](https://netflixtechblog.com/)
 * [Airbnb Engineering](https://medium.com/airbnb-engineering)
@@ -215,16 +215,16 @@ curl 'http://localhost:8000/search/articles?q=Machine+Learning'
 
 ---
 
-## 🚀 What’s Next
+## What’s Next
 
-* ⚙️ Caching layers for heavy analytics endpoints.
-* 🕸️ Edge deployment using CDN edge functions.
-* 🗂️ New pages scaffolded under `src/pages/` with React Router for future features.
-* 🛡️ Better role-based auth and multi-user dashboards.
+* Caching layers for heavy analytics endpoints.
+* Edge deployment using CDN edge functions.
+* New pages scaffolded under `src/pages/` with React Router for future features.
+* Better role-based auth and multi-user dashboards.
 
 ---
 
-## ✅ Status
+## Status
 
 ![Lint Status](https://img.shields.io/badge/lint-passing-brightgreen)
 ![Tests](https://img.shields.io/badge/tests-passing-brightgreen)
@@ -233,12 +233,12 @@ curl 'http://localhost:8000/search/articles?q=Machine+Learning'
 
 ---
 
-## 🏆 Author
+## Author
 
 Built by **Arijit Chowdhury**
-🚀 Full-stack engineer | AI systems | Scalable backend | Observability-first mindset
+Full-stack engineer | AI systems | Scalable backend | Observability-first mindset
 
 ---
 
 **Clone. Run. Observe. Ship.**
-Production-grade AI infra for engineering content discovery. ✨
+Production-grade AI infra for engineering content discovery.
