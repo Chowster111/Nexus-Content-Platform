@@ -15,14 +15,14 @@ class RecommendController:
             top_k: int = Query(5, description="Number of top results"),
             user_id: str = Query(None, description="Optional user ID for personalization")
         ):
-            logger.info(f"📥 Incoming recommendation request | query='{query}', user_id={user_id}")
+            logger.info(f"Incoming recommendation request | query='{query}', user_id={user_id}")
 
             try:
                 results = self.get_recommendation_results(query, top_k, user_id)
-                logger.info(f"✅ Returning {len(results)} recommendations")
+                logger.info(f"SUCCESS Returning {len(results)} recommendations")
                 return results
             except Exception as e:
-                logger.exception("❌ Error generating recommendations after retries")
+                logger.exception("ERROR generating recommendations after retries")
                 raise HTTPException(status_code=500, detail=str(e))
 
     @with_backoff()

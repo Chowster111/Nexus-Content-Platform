@@ -17,31 +17,31 @@ class ScraperController:
 
     def trigger_scrape_source(self, source: str):
         source = source.lower()
-        logger.info(f"🔍 Scrape request for source: '{source}'")
+        logger.info(f"Scrape request for source: '{source}'")
 
         instance_fn = SCRAPER_MAP.get(source)
         if not instance_fn:
-            logger.warning(f"⚠️ Invalid source requested: '{source}'")
+            logger.warning(f"ERROR Invalid source requested: '{source}'")
             raise HTTPException(status_code=400, detail=f"Invalid source '{source}'. Must be one of {list(SCRAPER_MAP.keys())}")
 
         try:
             result = self.run_scrape(source, instance_fn().scrape)
-            logger.info(f"✅ Scrape completed for source: '{source}'")
+            logger.info(f"SUCCESS Scrape completed for source: '{source}'")
             return result
         except Exception as e:
-            logger.exception(f"❌ Error scraping source: '{source}'")
+            logger.exception(f"ERROR scraping source: '{source}'")
             return {"error": str(e)}
 
     def trigger_scrape_all(self):
-        logger.info("📡 Scrape triggered for all sources")
+        logger.info("Scrape triggered for all sources")
         results = {}
 
         for source in SCRAPER_MAP:
             try:
                 results[source] = self.run_scrape(source, SCRAPER_MAP[source]().scrape)
-                logger.info(f"✅ Successfully scraped '{source}'")
+                logger.info(f"SUCCESS: Successfully scraped '{source}'")
             except Exception as e:
-                logger.exception(f"❌ Failed scraping '{source}'")
+                logger.exception(f"ERROR Failed scraping '{source}'")
                 results[source] = {"error": str(e)}
         
         return results

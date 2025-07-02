@@ -17,7 +17,7 @@ class HealthController:
                 latency_ms = round((time.time() - start_time) * 1000, 2)
 
                 db_status = self.interpret_db_status(response)
-                logger.info(f"✅ Health check: status=ok, db_status={db_status}, latency={latency_ms}ms")
+                logger.info(f"HEALTH CHECK: status=ok, db_status={db_status}, latency={latency_ms}ms")
 
                 return {
                     "status": "ok" if db_status == "ok" else "degraded",
@@ -27,7 +27,7 @@ class HealthController:
 
             except Exception as e:
                 latency_ms = round((time.time() - start_time) * 1000, 2)
-                logger.error(f"❌ Health check failed: error={e}, latency={latency_ms}ms")
+                logger.error(f"ERROR Health check failed: error={e}, latency={latency_ms}ms")
 
                 raise HTTPException(
                     status_code=500,
@@ -40,7 +40,7 @@ class HealthController:
 
     @staticmethod
     def check_database():
-        logger.info("🔍 Checking Supabase connectivity for healthcheck")
+        logger.info("HEALTH CHECK: Checking Supabase connectivity for healthcheck")
         return supabase.table("articles").select("id").limit(1).execute()
 
     @staticmethod

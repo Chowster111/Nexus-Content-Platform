@@ -29,7 +29,7 @@ class AnalyticsController:
             try:
                 response = self.fetch_articles()
             except Exception as e:
-                logger.exception("❌ Error fetching articles for source count")
+                logger.exception("ERROR fetching articles for source count")
                 raise HTTPException(status_code=500, detail=str(e))
 
             articles = response.data or []
@@ -39,7 +39,7 @@ class AnalyticsController:
                 source_count[source] += 1
 
             sorted_sources = sorted(source_count.items(), key=lambda x: x[1], reverse=True)
-            logger.info(f"✅ Top sources: {sorted_sources[:limit]}")
+            logger.info(f"SUCCESS Top sources: {sorted_sources[:limit]}")
 
             return JSONResponse(
                 content={"sources": sorted_sources[:limit]},
@@ -52,7 +52,7 @@ class AnalyticsController:
             try:
                 result = self.fetch_categories()
             except Exception as e:
-                logger.exception("❌ Error fetching categories")
+                logger.exception("ERROR fetching categories")
                 raise HTTPException(status_code=500, detail=str(e))
 
             category_counts = defaultdict(int)
@@ -61,7 +61,7 @@ class AnalyticsController:
                 category_counts[category] += 1
 
             sorted_categories = sorted(category_counts.items(), key=lambda x: x[1], reverse=True)
-            logger.info(f"✅ Category counts: {sorted_categories}")
+            logger.info(f"SUCCESS Category counts: {sorted_categories}")
 
             return JSONResponse(
                 content={"categories": sorted_categories},

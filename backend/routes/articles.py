@@ -32,21 +32,21 @@ class ArticlesController:
         )
 
     def get_all_articles(self):
-        logger.info("📚 Fetching all articles")
+        logger.info("Fetching all articles")
         try:
             response = supabase.table("articles").select("*").order("published_date", desc=True).execute()
             return response.data
         except Exception as e:
-            logger.exception("❌ Error fetching all articles")
+            logger.exception("ERROR fetching all articles")
             raise HTTPException(status_code=500, detail=str(e))
 
     def get_articles_by_tag(self, tag: str, sort: str = Query("latest", pattern="^(latest|oldest)$")):
-        logger.info(f"🔍 Fetching articles by tag: '{tag}' with sort='{sort}'")
+        logger.info(f"Fetching articles by tag: '{tag}' with sort='{sort}'")
         tag = tag.lower()
         try:
             response = self._fetch_articles()
         except Exception as e:
-            logger.exception("❌ Error fetching articles by tag")
+            logger.exception("ERROR fetching articles by tag")
             raise HTTPException(status_code=500, detail=str(e))
 
         filtered = [
@@ -66,7 +66,7 @@ class ArticlesController:
         try:
             response = self._fetch_articles()
         except Exception as e:
-            logger.exception("❌ Error filtering articles by tag")
+            logger.exception("ERROR filtering articles by tag")
             raise HTTPException(status_code=500, detail=str(e))
 
         filtered = [
@@ -80,11 +80,11 @@ class ArticlesController:
         return self._sort_articles(filtered, sort)
 
     def get_all_tags(self):
-        logger.info("🏷️ Fetching all tags")
+        logger.info("Fetching all tags")
         try:
             response = self._fetch_tags()
         except Exception as e:
-            logger.exception("❌ Error fetching all tags")
+            logger.exception("ERROR fetching all tags")
             raise HTTPException(status_code=500, detail=str(e))
 
         tag_counter = defaultdict(int)
@@ -97,11 +97,11 @@ class ArticlesController:
 
     def get_by_category(self, category: str, sort: str = Query("latest", pattern="^(latest|oldest)$")):
         category = category[0].upper() + category[1:].lower()
-        logger.info(f"📂 Fetching articles by category: '{category}'")
+        logger.info(f"Fetching articles by category: '{category}'")
         try:
             response = supabase.table("articles").select("*").eq("category", category).execute()
         except Exception as e:
-            logger.exception("❌ Error fetching by category")
+            logger.exception("ERROR fetching by category")
             raise HTTPException(status_code=500, detail=str(e))
 
         return self._sort_articles(response.data, sort)
@@ -116,20 +116,20 @@ class ArticlesController:
             "uber": "Uber Engineering Blog"
         }.get(source, source)
 
-        logger.info(f"📡 Fetching by source: '{source}'")
+        logger.info(f"Fetching by source: '{source}'")
         try:
             response = supabase.table("articles").select("*").eq("source", source).execute()
         except Exception as e:
-            logger.exception("❌ Error fetching by source")
+            logger.exception("ERROR fetching by source")
             raise HTTPException(status_code=500, detail=str(e))
 
         return self._sort_articles(response.data, sort)
 
     def get_article(self, article_id: str):
-        logger.info(f"📰 Fetching single article with id: {article_id}")
+        logger.info(f"Fetching single article with id: {article_id}")
         try:
             response = supabase.table("articles").select("*").eq("id", article_id).single().execute()
             return response.data
         except Exception as e:
-            logger.exception("❌ Error fetching article")
+            logger.exception("ERROR fetching article")
             raise HTTPException(status_code=500, detail=str(e))

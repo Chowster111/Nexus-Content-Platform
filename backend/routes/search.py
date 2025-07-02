@@ -21,7 +21,7 @@ class SearchController:
             .order("published_date", desc=True)
             .execute()
         )
-        logger.info("✅ Retrieved articles from Supabase")
+        logger.info("SUCCESS Retrieved articles from Supabase")
 
         articles = response.data or []
         scores = []
@@ -47,21 +47,21 @@ class SearchController:
         ]
 
     async def search_articles(self, q: str = Query(..., description="Search query")):
-        logger.info(f"🔍 Incoming search query: '{q}'")
+        logger.info(f"Incoming search query: '{q}'")
 
         query_embedding = safe_encode(q, semantic_model)
         if query_embedding is None:
-            logger.warning("⚠️ Failed to embed query")
+            logger.warning("ERROR Failed to embed query")
             return {"error": "Failed to embed query"}
 
         try:
             top_results = self.fetch_ranked_articles(query_embedding)
             if not top_results:
-                logger.info("📭 No articles found or matched")
+                logger.info("No articles found or matched")
                 return {"results": []}
 
-            logger.info(f"🎯 Returning top {len(top_results)} results")
+            logger.info(f"Returning top {len(top_results)} results")
             return {"results": top_results}
         except Exception as e:
-            logger.exception("❌ Search failed after retries")
+            logger.exception("ERROR: Search failed after retries")
             return {"error": str(e)}
