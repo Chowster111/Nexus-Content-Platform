@@ -1,66 +1,69 @@
 from collections import defaultdict
-from datetime import datetime, timedelta
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
 from db.supabase_client import supabase
 from logging_config import logger
 from .utils.retry import with_backoff
 
-router = APIRouter()
+class AnalyticsController:
+    def __init__(self):
+        self.router = APIRouter()
+        self.register_routes()
 
-@with_backoff(max_retries=3, backoff_factor=0.5)
-def fetch_articles():
-    return supabase.table("articles").select("*").order("published_date", desc=True).execute()
+    @staticmethod
+    @with_backoff(max_retries=3, backoff_factor=0.5)
+    def fetch_articles():
+        logger.info("🔄 Fetching all articles from Supabase")
+        return supabase.table("articles").select("*").order("published_date", desc=True).execute()
 
-@with_backoff(max_retries=3, backoff_factor=0.5)
-def fetch_categories():
-    return supabase.table("articles").select("category").execute()
+    @staticmethod
+    @with_backoff(max_retries=3, backoff_factor=0.5)
+    def fetch_categories():
+        logger.info("🔄 Fetching article categories from Supabase")
+        return supabase.table("articles").select("category").execute()
 
-# ---
+    def register_routes(self):
+        @self.router.get("/blogs-by-source/{limit}")
+        def blogs_by_source(limit: int = 25):
+            logger.info(f"📊 Start: blogs-by-source | limit={limit}")
+            try:
+                response = self.fetch_articles()
+            except Exception as e:
+                logger.exception("❌ Error fetching articles for source count")
+                raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/blogs-by-source/{limit}")
-def blogs_by_source(limit: int = 25):
-    logger.info(f"📊 Fetching blogs by source with limit={limit}")
-    try:
-        response = fetch_articles()
-    except Exception as e:
-        logger.exception("❌ Failed to fetch articles for source analysis")
-        raise HTTPException(status_code=500, detail=str(e))
+            articles = response.data or []
+            source_count = defaultdict(int)
+            for article in articles:
+                source = article.get("source", "Unknown")
+                source_count[source] += 1
 
-    articles = response.data
-    logger.info(f"📄 Retrieved {len(articles)} articles")
+            sorted_sources = sorted(source_count.items(), key=lambda x: x[1], reverse=True)
+            logger.info(f"✅ Top sources: {sorted_sources[:limit]}")
 
-    source_count = defaultdict(int)
-    for article in articles:
-        source = article.get("source", "Unknown")
-        source_count[source] += 1
+            return JSONResponse(
+                content={"sources": sorted_sources[:limit]},
+                headers={"Cache-Control": "public, max-age=600"}
+            )
 
-    sorted_sources = sorted(source_count.items(), key=lambda x: x[1], reverse=True)
-    logger.info(f"✅ Top sources: {sorted_sources[:limit]}")
+        @self.router.get("/category-count")
+        def get_article_count_by_category():
+            logger.info("📊 Start: category-count")
+            try:
+                result = self.fetch_categories()
+            except Exception as e:
+                logger.exception("❌ Error fetching categories")
+                raise HTTPException(status_code=500, detail=str(e))
 
-    return JSONResponse(
-        content={"sources": sorted_sources[:limit]},
-        headers={"Cache-Control": "public, max-age=600"}
-    )
+            category_counts = defaultdict(int)
+            for row in result.data or []:
+                category = row.get("category") or "Unknown"
+                category_counts[category] += 1
 
-@router.get("/category-count")
-def get_article_count_by_category():
-    logger.info("📊 Fetching article count by category")
-    try:
-        result = fetch_categories()
-    except Exception as e:
-        logger.exception("❌ Failed to fetch categories")
-        raise HTTPException(status_code=500, detail=str(e))
+            sorted_categories = sorted(category_counts.items(), key=lambda x: x[1], reverse=True)
+            logger.info(f"✅ Category counts: {sorted_categories}")
 
-    category_counts = defaultdict(int)
-    for row in result.data:
-        cat = row.get("category", "Unknown")
-        category_counts[cat] += 1
-
-    sorted_categories = sorted(category_counts.items(), key=lambda x: x[1], reverse=True)
-    logger.info(f"✅ Category counts: {sorted_categories}")
-
-    return JSONResponse(
-        content={"categories": sorted_categories},
-        headers={"Cache-Control": "public, max-age=600"}
-    )
+            return JSONResponse(
+                content={"categories": sorted_categories},
+                headers={"Cache-Control": "public, max-age=600"}
+            )

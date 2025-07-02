@@ -1,144 +1,135 @@
 from typing import List, Optional
-
-from fastapi import APIRouter, Query
-
+from fastapi import APIRouter, Query, HTTPException
 from db.supabase_client import supabase
+from logging_config import logger
+from .utils.retry import with_backoff
+from collections import defaultdict
 
-router = APIRouter()
+class ArticlesController:
+    def __init__(self):
+        self.router = APIRouter()
+        self.router.get("/")(self.get_all_articles)
+        self.router.get("/tags/{tag}")(self.get_articles_by_tag)
+        self.router.get("/filter")(self.filter_articles_by_tag)
+        self.router.get("/all-tags")(self.get_all_tags)
+        self.router.get("/by-category/{category}")(self.get_by_category)
+        self.router.get("/by-source/{source}")(self.get_by_source)
+        self.router.get("/{article_id}")(self.get_article)
 
-@router.get("/")
-def get_all_articles():
-    try:
-        response = supabase.table("articles").select("*").order("published_date", desc=True).execute()
-    except Exception as e:
-        print(f"❌ Error: {e}")
-        return {"error": str(e)}
-    return response.data
+    @with_backoff()
+    def _fetch_articles(self):
+        return supabase.table("articles").select("*").execute()
 
+    @with_backoff()
+    def _fetch_tags(self):
+        return supabase.table("articles").select("tags").execute()
 
-@router.get("/tags/{tag}")
-def get_articles_by_tag(tag: str, sort: str = Query("latest", pattern="^(latest|oldest)$")):
-    tag = tag.lower()
-    try:
-        response = supabase.table("articles").select("*").execute()
-    except Exception as e:
-        print(f" Error: {e}")
-        return {"error": str(e)}
-    
-    all_articles = response.data
-
-    filtered_articles = [
-        article for article in all_articles
-        if article.get("tags") and any(tag in t.lower() for t in article["tags"])
-    ]
-
-    sorted_articles = sorted(
-        filtered_articles,
-        key=lambda a: a.get("published_date", ""),
-        reverse=(sort == "latest")
-    )
-    return sorted_articles
-
-@router.get("/filter")
-def filter_articles_by_tag(
-    tags: Optional[List[str]] = Query(None),
-    sort: str = Query("latest", pattern="^(latest|oldest)$")
-):
-    if not tags:
-        return {"error": "No tags provided"}
-
-    tags = [tag.lower() for tag in tags]
-
-    try:
-        response = supabase.table("articles").select("*").execute()
-    except Exception as e:
-        print("Error: {e}")
-        return {"error": str(e)}
-    
-    all_articles = response.data
-
-    filtered_articles = [
-        article for article in all_articles
-        if article.get("tags") and any(
-            any(query_tag in tag.lower() for tag in article["tags"])
-            for query_tag in tags
+    def _sort_articles(self, articles, sort_order):
+        return sorted(
+            articles,
+            key=lambda a: a.get("published_date", ""),
+            reverse=(sort_order == "latest")
         )
-    ]
 
-    sorted_articles = sorted(
-        filtered_articles,
-        key=lambda a: a.get("published_date", ""),
-        reverse=(sort == "latest")
-    )
+    def get_all_articles(self):
+        logger.info("📚 Fetching all articles")
+        try:
+            response = supabase.table("articles").select("*").order("published_date", desc=True).execute()
+            return response.data
+        except Exception as e:
+            logger.exception("❌ Error fetching all articles")
+            raise HTTPException(status_code=500, detail=str(e))
 
-    return sorted_articles
+    def get_articles_by_tag(self, tag: str, sort: str = Query("latest", pattern="^(latest|oldest)$")):
+        logger.info(f"🔍 Fetching articles by tag: '{tag}' with sort='{sort}'")
+        tag = tag.lower()
+        try:
+            response = self._fetch_articles()
+        except Exception as e:
+            logger.exception("❌ Error fetching articles by tag")
+            raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/all-tags")
-def get_all_tags():
-    try:
-        response = supabase.table("articles").select("tags").execute()
-    except Exception as e:
-        print("Error: {e}")
-        return {"error": str(e)}
-    
-    tag_counter = {}
+        filtered = [
+            a for a in response.data
+            if a.get("tags") and any(tag in t.lower() for t in a["tags"])
+        ]
 
-    for row in response.data:
-        for tag in row.get("tags", []):
-            tag_lower = tag.lower()
-            tag_counter[tag_lower] = tag_counter.get(tag_lower, 0) + 1
+        sorted_articles = self._sort_articles(filtered, sort)
+        return sorted_articles
 
-    sorted_tags = sorted(tag_counter.items(), key=lambda x: -x[1])
-    return [{"tag": tag, "count": count} for tag, count in sorted_tags]
+    def filter_articles_by_tag(self, tags: Optional[List[str]] = Query(None), sort: str = Query("latest", pattern="^(latest|oldest)$")):
+        if not tags:
+            raise HTTPException(status_code=400, detail="No tags provided")
 
-@router.get("/by-category/{category}")
-def get_by_category(category: str, sort: str = Query("latest", pattern="^(latest|oldest)$")):
-    category = category[0].upper() + category[1:].lower()
+        tags = [tag.lower() for tag in tags]
+        logger.info(f"🔍 Filtering by tags: {tags} with sort='{sort}'")
+        try:
+            response = self._fetch_articles()
+        except Exception as e:
+            logger.exception("❌ Error filtering articles by tag")
+            raise HTTPException(status_code=500, detail=str(e))
 
-    try:
-        response = supabase.table("articles").select("*").eq("category", category).execute()
-    except Exception as e:
-        print("Error: {e}")
-        return {"error": {e}}
-    
-    all_articles = response.data
+        filtered = [
+            a for a in response.data
+            if a.get("tags") and any(
+                any(query_tag in tag.lower() for tag in a["tags"])
+                for query_tag in tags
+            )
+        ]
 
-    sorted_articles = sorted(
-        all_articles,
-        key=lambda a: a.get("published_date", ""),
-        reverse=(sort == "latest")
-    )
+        return self._sort_articles(filtered, sort)
 
-    return sorted_articles
+    def get_all_tags(self):
+        logger.info("🏷️ Fetching all tags")
+        try:
+            response = self._fetch_tags()
+        except Exception as e:
+            logger.exception("❌ Error fetching all tags")
+            raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/by-source/{source}")
-def get_by_source(source: str, sort: str = Query("latest", pattern="^(latest|oldest)$")):
+        tag_counter = defaultdict(int)
+        for row in response.data:
+            for tag in row.get("tags", []):
+                tag_counter[tag.lower()] += 1
 
-    source = "Netflix Tech Blog" if source.lower() == "netflix" else source
-    source = "Airbnb Engineering Blog" if source.lower() == "airbnb" else source
-    source = "Stripe Blog" if source.lower() == "stripe" else source
-    source = "Tinder Tech Blog" if source.lower() == "tinder" else source
-    source = "Uber Engineering Blog" if source.lower() == "uber" else source
+        sorted_tags = sorted(tag_counter.items(), key=lambda x: -x[1])
+        return [{"tag": tag, "count": count} for tag, count in sorted_tags]
 
-    try:
-        response = supabase.table("articles").select("*").eq("source", source).execute()
-    except Exception as e:
-        print("Error: {e}")
-        return {"error": str(e)}
+    def get_by_category(self, category: str, sort: str = Query("latest", pattern="^(latest|oldest)$")):
+        category = category[0].upper() + category[1:].lower()
+        logger.info(f"📂 Fetching articles by category: '{category}'")
+        try:
+            response = supabase.table("articles").select("*").eq("category", category).execute()
+        except Exception as e:
+            logger.exception("❌ Error fetching by category")
+            raise HTTPException(status_code=500, detail=str(e))
 
-    sorted_articles = sorted(
-        response.data,
-        key=lambda a: a.get("published_date", ""),
-        reverse=(sort == "latest")
-    )
+        return self._sort_articles(response.data, sort)
 
-    return sorted_articles
+    def get_by_source(self, source: str, sort: str = Query("latest", pattern="^(latest|oldest)$")):
+        source = source.lower()
+        source = {
+            "netflix": "Netflix Tech Blog",
+            "airbnb": "Airbnb Engineering Blog",
+            "stripe": "Stripe Blog",
+            "tinder": "Tinder Tech Blog",
+            "uber": "Uber Engineering Blog"
+        }.get(source, source)
 
-@router.get("/{article_id}")
-def get_article(article_id: str):
-    try:
-        response = supabase.table("articles").select("*").eq("id", article_id).single().execute()
-    except Exception as e:
-        print("Error: {e}")
-        return {"error": str(e)}
-    return response.data
+        logger.info(f"📡 Fetching by source: '{source}'")
+        try:
+            response = supabase.table("articles").select("*").eq("source", source).execute()
+        except Exception as e:
+            logger.exception("❌ Error fetching by source")
+            raise HTTPException(status_code=500, detail=str(e))
+
+        return self._sort_articles(response.data, sort)
+
+    def get_article(self, article_id: str):
+        logger.info(f"📰 Fetching single article with id: {article_id}")
+        try:
+            response = supabase.table("articles").select("*").eq("id", article_id).single().execute()
+            return response.data
+        except Exception as e:
+            logger.exception("❌ Error fetching article")
+            raise HTTPException(status_code=500, detail=str(e))
