@@ -7,8 +7,6 @@ from scraper.netflix import NetflixScraper
 from scraper.stripe import StripeScraper
 from scraper.tinder import TinderScraper
 from scraper.uber import UberScraper
-from scraper.notion import NotionScraper
-from scraper.slack import SlackScraper
 
 SCRAPER_MAP = {
     "netflix": NetflixScraper,
@@ -16,8 +14,6 @@ SCRAPER_MAP = {
     "airbnb": AirbnbScraper,
     "uber": UberScraper,
     "stripe": StripeScraper,
-    "notion": NotionScraper,
-    "slack": SlackScraper,
 }
 
 
@@ -30,7 +26,7 @@ def is_valid_embedding(embedding, expected_dim=768):
 
 def trigger_scrape(source_name: str, scrape_fn):
     articles = scrape_fn()
-    print(f"\nScraper returned {len(articles)} articles.")
+    print(f"\n🧠 Scraper returned {len(articles)} articles.")
 
     saved = 0
 
@@ -53,7 +49,7 @@ def trigger_scrape(source_name: str, scrape_fn):
                 print("✅ Updated Content.")
                 continue
             except Exception as e:
-                print(f"Update failed: {e}")
+                print(f"❌ Update failed: {e}")
                 continue
 
         # Insert new article
@@ -74,7 +70,7 @@ def trigger_scrape(source_name: str, scrape_fn):
             print("✅ Inserted.")
             saved += 1
         except Exception as e:
-            print(f"Insert failed: {e}")
+            print(f"❌ Insert failed: {e}")
 
-    print(f"\nFinished. {saved} new articles inserted.")
+    print(f"\n📦 Finished. {saved} new articles inserted.")
     return {"message": f"{saved} new articles scraped and saved from {source_name}."}
