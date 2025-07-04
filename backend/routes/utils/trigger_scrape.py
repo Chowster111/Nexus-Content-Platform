@@ -9,6 +9,9 @@ from scraper.tinder import TinderScraper
 from scraper.uber import UberScraper
 from scraper.notion import NotionScraper
 from scraper.slack import SlackScraper
+from scraper.robinhood import RobinhoodScraper
+from scraper.doordash import DoorDashScraper
+from scraper.meta import MetaEngineeringScraper
 
 SCRAPER_MAP = {
     "netflix": NetflixScraper,
@@ -18,6 +21,9 @@ SCRAPER_MAP = {
     "stripe": StripeScraper,
     "notion": NotionScraper,
     "slack": SlackScraper,
+    "robinhood": RobinhoodScraper,
+    "doordash": DoorDashScraper,
+    "meta" : MetaEngineeringScraper,
 }
 
 
