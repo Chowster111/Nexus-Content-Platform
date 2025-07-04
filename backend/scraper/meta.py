@@ -22,32 +22,37 @@ class MetaEngineeringScraper(BaseBlogScraper):
 
     def get_soup_pages(self):
         soups = []
+        click_count = 0
+        MAX_CLICKS = 30 
+
         try:
             print(f"🌐 Visiting Meta Engineering Blog — {self.base_url}")
             self.driver.get(self.base_url)
 
-            while True:
+            while click_count < MAX_CLICKS:
                 time.sleep(2)
                 soup = BeautifulSoup(self.driver.page_source, "html.parser")
-                posts = self.select_posts(soup)
                 soups.append(soup)
 
-                # Try to click "Load More"
                 try:
                     load_more = self.driver.find_element("css selector", "button.loadmore-btn")
                     if load_more.is_displayed():
-                        print("🔄 Clicking 'Load More'...")
+                        print(f"🔄 Clicking 'Load More'... ({click_count + 1}/{MAX_CLICKS})")
                         self.driver.execute_script("arguments[0].click();", load_more)
+                        click_count += 1
                         time.sleep(2)
                     else:
+                        print("✅ 'Load More' not displayed — stopping.")
                         break
                 except Exception:
-                    print("✅ No more 'Load More' — finished loading.")
+                    print("✅ No 'Load More' button found — done.")
                     break
+
+            if click_count >= MAX_CLICKS:
+                print(f"⏹️ Reached max clicks ({MAX_CLICKS}) — stopping.")
 
         finally:
             self.driver.quit()
-
         return soups
 
     def select_posts(self, soup):
@@ -61,10 +66,7 @@ class MetaEngineeringScraper(BaseBlogScraper):
         tag_els = post.select("span.cat-links a.category")
         tags = [t.get_text(strip=True) for t in tag_els]
 
-        date_el = post.select_one("time.entry-date.published")
         published_date = None
-        if date_el and date_el.get("datetime"):
-            published_date = datetime.strptime(date_el["datetime"], "%b %d, %Y").date().isoformat()
 
         if title and url:
             article = self.enrich_article(title, url, published_date, summary="")
