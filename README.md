@@ -205,13 +205,31 @@ curl 'http://localhost:8000/search/articles?q=Machine+Learning'
 
 ---
 
-## Data Sources
+## Infrastructure — What We Use and Why
 
-* [Netflix Tech Blog](https://netflixtechblog.com/)
-* [Airbnb Engineering](https://medium.com/airbnb-engineering)
-* [Uber Engineering](https://www.uber.com/blog/engineering/)
-* [Stripe Engineering](https://stripe.com/blog)
-* [Tinder Engineering](https://medium.com/tinder)
+Our deployment stack balances local development simplicity with production-ready patterns.
+
+| Layer            | What We Use                                          | Why We Use It                                                                      | Trade-offs                                                   |
+|------------------|------------------------------------------------------|-------------------------------------------------------------------------------------|--------------------------------------------------------------|
+| **Containers**   | Docker, Docker Compose                               | Consistent local dev, reproducible builds.                                         | Docker Compose for dev; ECS Fargate or K8s for production.   |
+| **Registry**     | AWS ECR                                              | Private, secure image storage, IAM-based access.                                   | Slightly more setup than Docker Hub; tighter integration.    |
+| **Orchestration**| ECS with Fargate                                     | Serverless containers, no VM maintenance, scales automatically.                    | Higher per-unit cost vs. EC2; lower ops overhead.            |
+| **Serverless**   | AWS Lambda                                           | Runs scrapers/batch jobs without idle costs.                                       | Runtime limits; move to ECS if jobs grow too large.          |
+| **Networking**   | VPC, public subnets, Internet Gateway, ALB           | Isolated, routable network; ALB handles traffic and routing.                       | Uses public subnets for dev; private subnets recommended for prod. |
+| **Secrets**      | .env for local; IAM roles; Terraform outputs         | Keeps secrets out of code; uses IAM for container/ECR auth.                        | Upgrade to AWS Secrets Manager for production.               |
+| **State**        | Terraform S3 backend + DynamoDB lock (optional)      | Shared, consistent state across team; prevents conflicting applies.                | Local state fine for solo dev; remote state recommended for teams. |
+| **Observability**| Prometheus, Grafana, Sentry, structured logging      | Monitors query throughput, errors, retries, user actions.                          | Adds containers to dev; use managed observability in prod.   |
+
+### How It Fits Together
+- **`docker-compose.yml`** runs backend, frontend, scrapers, Nginx reverse proxy, and Prometheus locally.
+- **Nginx** routes API calls, serves static frontend, and exposes metrics.
+- **Terraform** provisions all AWS resources in modular pieces: VPC, ECR, ECS/Fargate, ALB, Lambda.
+- **State** is stored remotely (S3 + DynamoDB) to avoid accidental overwrites when multiple team members apply infra changes.
+
+**Key Trade-off:** We use public subnets and simpler IAM for dev speed; production should add private subnets, stricter secrets handling, and automated pipelines.
+
+This setup keeps your AI-powered recommender infrastructure modular, observable, and scalable with minimal extra operational burden.
+
 
 ---
 
