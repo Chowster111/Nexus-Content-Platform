@@ -6,6 +6,7 @@ from logging_config import logger
 from .utils.retry import with_backoff
 from .utils.trigger_scrape import SCRAPER_MAP, trigger_scrape
 from ..models.models import ScraperResult, ScrapedArticle
+from pydantic import ValidationError
 
 
 class ScraperController:
@@ -31,7 +32,18 @@ class ScraperController:
 
         try:
             result: ScraperResult = self.run_scrape(source, instance_fn().scrape)
-            logger.info(f"SUCCESS Scrape completed for source: '{source}'")
+            # Validate articles in result
+            valid_articles = []
+            errors = []
+            for article in result.articles:
+                try:
+                    valid_articles.append(ScrapedArticle(**article.dict()))
+                except ValidationError as ve:
+                    logger.error(f"Validation error for scraped article: {article} | {ve}")
+                    errors.append({"article": article, "error": str(ve)})
+            if errors:
+                logger.warning(f"Some scraped articles could not be validated: {errors}")
+            result.articles = valid_articles
             return result
         except Exception as e:
             logger.exception(f"ERROR scraping source: '{source}'")
@@ -44,10 +56,22 @@ class ScraperController:
 
         for source in SCRAPER_MAP:
             try:
-                results[source] = self.run_scrape(source, SCRAPER_MAP[source]().scrape)
+                result = self.run_scrape(source, SCRAPER_MAP[source]().scrape)
+                # Validate articles in result
+                valid_articles = []
+                errors = []
+                for article in result.articles:
+                    try:
+                        valid_articles.append(ScrapedArticle(**article.dict()))
+                    except ValidationError as ve:
+                        logger.error(f"Validation error for scraped article: {article} | {ve}")
+                        errors.append({"article": article, "error": str(ve)})
+                if errors:
+                    logger.warning(f"Some scraped articles for {source} could not be validated: {errors}")
+                result.articles = valid_articles
+                results[source] = result
                 logger.info(f"SUCCESS: Successfully scraped '{source}'")
             except Exception as e:
                 logger.exception(f"ERROR Failed scraping '{source}'")
                 results[source] = ScraperResult(source=source, success=False, error=str(e), articles=[])
-        
         return results

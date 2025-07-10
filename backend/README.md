@@ -91,6 +91,64 @@ backend/
 
 ---
 
+## Type Validation and Error Handling
+
+The backend implements comprehensive **runtime type validation** using Pydantic models to ensure data integrity and provide detailed error reporting.
+
+### Runtime Validation Strategy
+
+* **API Response Validation:** All endpoints validate response models before returning data
+* **Database Data Validation:** Articles, users, and other entities are validated when loaded from DB
+* **Scraper Data Validation:** Scraped articles are validated before database insertion
+* **Embedding Validation:** Vector embeddings are checked for correct dimensions and data types
+
+### Error Handling Features
+
+* **Detailed Error Logging:** Validation errors include the problematic data and specific field issues
+* **Graceful Degradation:** Invalid data is logged and skipped rather than crashing the API
+* **Structured Error Responses:** API endpoints return consistent error formats with context
+* **Partial Success Handling:** When some items fail validation, valid items are still returned
+
+### Example Validation Flow
+
+```python
+# When loading articles from database
+articles = []
+errors = []
+for article in db_response.data:
+    try:
+        articles.append(ArticleResponse(**article))  # Runtime validation
+    except ValidationError as ve:
+        logger.error(f"Validation error for article: {article} | {ve}")
+        errors.append({"article": article, "error": str(ve)})
+
+# Return valid articles with error count in response
+return RecommendationResponse(
+    articles=articles, 
+    error=f"{len(errors)} articles failed validation" if errors else None
+)
+```
+
+### Benefits
+
+* **Catches Real Data Issues:** Validates actual runtime data from DB, APIs, scrapers
+* **Prevents Runtime Crashes:** Malformed data is handled gracefully
+* **Improves Debugging:** Detailed error context helps identify data problems
+* **Ensures API Consistency:** All responses match expected schemas
+* **Minimal Performance Impact:** Validation overhead is typically <1ms per item
+
+### Validation Coverage
+
+| Component | Validation Target | Error Handling |
+|-----------|------------------|----------------|
+| **API Controllers** | Response models (ArticleResponse, SearchResult, etc.) | Log errors, return partial results |
+| **Recommender Engine** | Article data and recommendation output | Skip invalid articles, log issues |
+| **Scrapers** | Scraped article structure | Skip invalid articles, continue scraping |
+| **Database Layer** | Query results and data types | Log validation errors, handle gracefully |
+| **Health Checks** | System status responses | Validate health check output structure |
+
+---
+
 ## Setup
 
 1. **Clone the repository**

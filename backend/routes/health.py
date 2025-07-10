@@ -3,6 +3,7 @@ from fastapi import APIRouter, HTTPException
 from db.supabase_client import supabase
 from logging_config import logger
 import time
+from pydantic import ValidationError, BaseModel
 
 
 class HealthController:
@@ -23,12 +24,18 @@ class HealthController:
                 db_status: str = self.interpret_db_status(response)
                 logger.info(f"HEALTH CHECK: status=ok, db_status={db_status}, latency={latency_ms}ms")
 
-                return {
+                result = {
                     "status": "ok" if db_status == "ok" else "degraded",
                     "database": db_status,
                     "latency_ms": latency_ms,
                 }
-
+                try:
+                    # Validate health check response
+                    HealthCheckResponse(**result)
+                except ValidationError as ve:
+                    logger.error(f"Validation error for health check response: {result} | {ve}")
+                    raise HTTPException(status_code=500, detail=f"Validation error: {ve}")
+                return result
             except Exception as e:
                 latency_ms: float = round((time.time() - start_time) * 1000, 2)
                 logger.error(f"ERROR Health check failed: error={e}, latency={latency_ms}ms")
@@ -56,3 +63,9 @@ class HealthController:
         elif len(response.data) == 0:
             return "no data"
         return "ok"
+
+
+class HealthCheckResponse(BaseModel):
+    status: str
+    database: str
+    latency_ms: float

@@ -4,6 +4,7 @@ from db.supabase_client import supabase
 from logging_config import logger
 from .utils.retry import with_backoff
 from collections import defaultdict
+from pydantic import ValidationError
 from ..models.models import (
     ArticleResponse, 
     TagCount, 
@@ -47,10 +48,20 @@ class ArticlesController:
         logger.info("Fetching all articles")
         try:
             response: Dict[str, Any] = supabase.table("articles").select("*").order("published_date", desc=True).execute()
-            return [ArticleResponse(**article) for article in response.data]
+            articles = []
+            errors = []
+            for article in response.data:
+                try:
+                    articles.append(ArticleResponse(**article))
+                except ValidationError as ve:
+                    logger.error(f"Validation error for article: {article} | {ve}")
+                    errors.append({"article": article, "error": str(ve)})
+            if errors:
+                logger.warning(f"Some articles could not be validated: {errors}")
+            return articles
         except Exception as e:
             logger.exception("ERROR fetching all articles")
-            raise HTTPException(status_code=500, detail=str(e))
+            raise HTTPException(status_code=500, detail=f"Internal error: {e}")
 
     def get_articles_by_tag(self, tag: str, sort: str = Query("latest", pattern="^(latest|oldest)$")) -> List[ArticleResponse]:
         """Get articles filtered by a specific tag."""
@@ -60,7 +71,7 @@ class ArticlesController:
             response: Dict[str, Any] = self._fetch_articles()
         except Exception as e:
             logger.exception("ERROR fetching articles by tag")
-            raise HTTPException(status_code=500, detail=str(e))
+            raise HTTPException(status_code=500, detail=f"Internal error: {e}")
 
         filtered: List[Dict[str, Any]] = [
             a for a in response.data
@@ -68,7 +79,17 @@ class ArticlesController:
         ]
 
         sorted_articles: List[Dict[str, Any]] = self._sort_articles(filtered, sort)
-        return [ArticleResponse(**article) for article in sorted_articles]
+        articles = []
+        errors = []
+        for article in sorted_articles:
+            try:
+                articles.append(ArticleResponse(**article))
+            except ValidationError as ve:
+                logger.error(f"Validation error for article: {article} | {ve}")
+                errors.append({"article": article, "error": str(ve)})
+        if errors:
+            logger.warning(f"Some articles by tag could not be validated: {errors}")
+        return articles
 
     def filter_articles_by_tag(self, tags: Optional[List[str]] = Query(None), sort: str = Query("latest", pattern="^(latest|oldest)$")) -> List[ArticleResponse]:
         """Filter articles by multiple tags."""
@@ -81,7 +102,7 @@ class ArticlesController:
             response: Dict[str, Any] = self._fetch_articles()
         except Exception as e:
             logger.exception("ERROR filtering articles by tag")
-            raise HTTPException(status_code=500, detail=str(e))
+            raise HTTPException(status_code=500, detail=f"Internal error: {e}")
 
         filtered: List[Dict[str, Any]] = [
             a for a in response.data
@@ -92,7 +113,17 @@ class ArticlesController:
         ]
 
         sorted_articles: List[Dict[str, Any]] = self._sort_articles(filtered, sort)
-        return [ArticleResponse(**article) for article in sorted_articles]
+        articles = []
+        errors = []
+        for article in sorted_articles:
+            try:
+                articles.append(ArticleResponse(**article))
+            except ValidationError as ve:
+                logger.error(f"Validation error for article: {article} | {ve}")
+                errors.append({"article": article, "error": str(ve)})
+        if errors:
+            logger.warning(f"Some filtered articles could not be validated: {errors}")
+        return articles
 
     def get_all_tags(self) -> List[TagCount]:
         """Get all tags with their counts."""
@@ -119,10 +150,20 @@ class ArticlesController:
             response: Dict[str, Any] = supabase.table("articles").select("*").eq("category", category).execute()
         except Exception as e:
             logger.exception("ERROR fetching by category")
-            raise HTTPException(status_code=500, detail=str(e))
+            raise HTTPException(status_code=500, detail=f"Internal error: {e}")
 
         sorted_articles: List[Dict[str, Any]] = self._sort_articles(response.data, sort)
-        return [ArticleResponse(**article) for article in sorted_articles]
+        articles = []
+        errors = []
+        for article in sorted_articles:
+            try:
+                articles.append(ArticleResponse(**article))
+            except ValidationError as ve:
+                logger.error(f"Validation error for article: {article} | {ve}")
+                errors.append({"article": article, "error": str(ve)})
+        if errors:
+            logger.warning(f"Some articles by category could not be validated: {errors}")
+        return articles
 
     def get_by_source(self, source: str, sort: str = Query("latest", pattern="^(latest|oldest)$")) -> List[ArticleResponse]:
         """Get articles by source."""
@@ -141,17 +182,31 @@ class ArticlesController:
             response: Dict[str, Any] = supabase.table("articles").select("*").eq("source", source).execute()
         except Exception as e:
             logger.exception("ERROR fetching by source")
-            raise HTTPException(status_code=500, detail=str(e))
+            raise HTTPException(status_code=500, detail=f"Internal error: {e}")
 
         sorted_articles: List[Dict[str, Any]] = self._sort_articles(response.data, sort)
-        return [ArticleResponse(**article) for article in sorted_articles]
+        articles = []
+        errors = []
+        for article in sorted_articles:
+            try:
+                articles.append(ArticleResponse(**article))
+            except ValidationError as ve:
+                logger.error(f"Validation error for article: {article} | {ve}")
+                errors.append({"article": article, "error": str(ve)})
+        if errors:
+            logger.warning(f"Some articles by source could not be validated: {errors}")
+        return articles
 
     def get_article(self, article_id: str) -> ArticleResponse:
         """Get a single article by ID."""
         logger.info(f"Fetching single article with id: {article_id}")
         try:
             response: Dict[str, Any] = supabase.table("articles").select("*").eq("id", article_id).single().execute()
-            return ArticleResponse(**response.data)
+            try:
+                return ArticleResponse(**response.data)
+            except ValidationError as ve:
+                logger.error(f"Validation error for article id {article_id}: {response.data} | {ve}")
+                raise HTTPException(status_code=500, detail=f"Validation error: {ve}")
         except Exception as e:
             logger.exception("ERROR fetching article")
-            raise HTTPException(status_code=500, detail=str(e))
+            raise HTTPException(status_code=500, detail=f"Internal error: {e}")
