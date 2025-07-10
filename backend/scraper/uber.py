@@ -1,46 +1,54 @@
 # uber_scraper.py
 from datetime import datetime
-
-from bs4 import BeautifulSoup
+from typing import List, Optional
+from bs4 import BeautifulSoup, Tag
 
 from .baseScraper import BaseBlogScraper
+from ..models.models import ScrapedArticle
 
 device = "cpu"
+
+
 class UberScraper(BaseBlogScraper):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             source_name="Uber Engineering Blog",
             base_url="https://www.uber.com/en-CA/blog/engineering/page/1",
             scroll_limit=2
         )
-        self.MAX_PAGES = 40
-        self.PAGE_TEMPLATE = "https://www.uber.com/en-CA/blog/engineering/page/{}"
+        self.MAX_PAGES: int = 40
+        self.PAGE_TEMPLATE: str = "https://www.uber.com/en-CA/blog/engineering/page/{}"
 
-    def get_soup_pages(self):
-        soups = []
+    def get_soup_pages(self) -> List[BeautifulSoup]:
+        """Get BeautifulSoup objects from multiple pages."""
+        soups: List[BeautifulSoup] = []
         for page in range(1, self.MAX_PAGES + 1):
             print(f"\n🌐 Visiting Uber page {page}")
             self.driver.get(self.PAGE_TEMPLATE.format(page))
             self.driver.implicitly_wait(5)
-            soup = BeautifulSoup(self.driver.page_source, "html.parser")
+            soup: BeautifulSoup = BeautifulSoup(self.driver.page_source, "html.parser")
             soups.append(soup)
         self.driver.quit()
         return soups
 
-    def select_posts(self, soup):
+    def select_posts(self, soup: BeautifulSoup) -> List[Tag]:
+        """Select post elements from the Uber blog."""
         return soup.select("div[data-baseweb='flex-grid-item']")
 
-    def parse_post(self, post):
-        title_el = post.select_one("h2")
-        link_el = post.select_one("a[href]")
-        date_el = post.select_one("p")
+    def parse_post(self, post: Tag) -> Optional[ScrapedArticle]:
+        """Parse a single Uber post element."""
+        title_el: Optional[Tag] = post.select_one("h2")
+        link_el: Optional[Tag] = post.select_one("a[href]")
+        date_el: Optional[Tag] = post.select_one("p")
 
-        title = title_el.get_text(strip=True) if title_el else None
-        url = link_el["href"].split("?")[0] if link_el else None
-        url = "https://www.uber.com" + url
+        title: Optional[str] = title_el.get_text(strip=True) if title_el else None
+        url: Optional[str] = None
+        if link_el:
+            url_path: str = link_el["href"].split("?")[0]
+            url = "https://www.uber.com" + url_path
 
-        date_text = date_el.get_text(strip=True).split(" / ")[0] if date_el else None
-        published_date = None
+        date_text: Optional[str] = date_el.get_text(strip=True).split(" / ")[0] if date_el else None
+        published_date: Optional[datetime] = None
         if date_text:
             try:
                 published_date = datetime.strptime(date_text, "%B %d, %Y")
@@ -52,15 +60,16 @@ class UberScraper(BaseBlogScraper):
 
         return None
 
-    def scrape(self):
-        soups = self.get_soup_pages()
-        articles = []
+    def scrape(self) -> List[ScrapedArticle]:
+        """Main scraping method for Uber articles."""
+        soups: List[BeautifulSoup] = self.get_soup_pages()
+        articles: List[ScrapedArticle] = []
 
         for soup in soups:
-            posts = self.select_posts(soup)
+            posts: List[Tag] = self.select_posts(soup)
             for post in posts:
                 try:
-                    article = self.parse_post(post)
+                    article: Optional[ScrapedArticle] = self.parse_post(post)
                     if article:
                         articles.append(article)
                 except Exception as e:
