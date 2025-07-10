@@ -4,6 +4,7 @@ from engine.recommender import recommend_articles
 from logging_config import logger
 from .utils.retry import with_backoff
 from ..models.models import RecommendationRequest, RecommendationResponse, ArticleResponse
+from pydantic import ValidationError
 
 
 class RecommendController:
@@ -25,10 +26,20 @@ class RecommendController:
             try:
                 results: List[Dict[str, Any]] = self.get_recommendation_results(query, top_k, user_id)
                 logger.info(f"SUCCESS Returning {len(results)} recommendations")
-                return RecommendationResponse(articles=[ArticleResponse(**article) for article in results])
+                articles = []
+                errors = []
+                for article in results:
+                    try:
+                        articles.append(ArticleResponse(**article))
+                    except ValidationError as ve:
+                        logger.error(f"Validation error for article: {article} | {ve}")
+                        errors.append({"article": article, "error": str(ve)})
+                if errors:
+                    logger.warning(f"Some articles could not be validated: {errors}")
+                return RecommendationResponse(articles=articles, error=(f"{len(errors)} articles failed validation" if errors else None))
             except Exception as e:
                 logger.exception("ERROR generating recommendations after retries")
-                return RecommendationResponse(error=str(e))
+                return RecommendationResponse(error=f"Internal error: {e}")
 
     @with_backoff()
     def get_recommendation_results(self, query: str, top_k: int, user_id: Optional[str]) -> List[Dict[str, Any]]:

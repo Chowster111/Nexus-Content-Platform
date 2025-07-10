@@ -12,6 +12,8 @@ from scraper.slack import SlackScraper
 from scraper.robinhood import RobinhoodScraper
 from scraper.doordash import DoorDashScraper
 from scraper.meta import MetaEngineeringScraper
+from pydantic import ValidationError
+from models.models import ScrapedArticle
 
 SCRAPER_MAP = {
     "netflix": NetflixScraper,
@@ -39,6 +41,7 @@ def trigger_scrape(source_name: str, scrape_fn):
     print(f"\nScraper returned {len(articles)} articles.")
 
     saved = 0
+    errors = []
 
     for i, article in enumerate(articles):
         print(f"\n--- Article {i+1} ---")
@@ -48,6 +51,14 @@ def trigger_scrape(source_name: str, scrape_fn):
         print(f"Content: {article.get('content', '')[:80]}...")
 
         embedding = article.get("embedding", None)
+
+        # Validate article structure
+        try:
+            ScrapedArticle(**article)
+        except ValidationError as ve:
+            print(f"❌ Validation error for scraped article: {article} | {ve}")
+            errors.append({"article": article, "error": str(ve)})
+            continue
 
         existing = supabase.table("articles").select("id").eq("url", article["url"]).execute()
         if existing.data:
@@ -81,6 +92,9 @@ def trigger_scrape(source_name: str, scrape_fn):
             saved += 1
         except Exception as e:
             print(f"Insert failed: {e}")
+
+    if errors:
+        print(f"⚠️ Some scraped articles failed validation: {errors}")
 
     print(f"\nFinished. {saved} new articles inserted.")
     return {"message": f"{saved} new articles scraped and saved from {source_name}."}

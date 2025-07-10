@@ -1,6 +1,6 @@
 from typing import Dict, Any
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 from db.supabase_client import supabase
 from logging_config import logger
 from ..models.models import SignupRequest, SigninRequest, AuthResponse, User
@@ -37,7 +37,11 @@ class AuthController:
                     }).execute()
 
                 logger.info(f"AUTH User created with ID: {user['id'] if user else 'Unknown'}")
-                return AuthResponse(message="User created", user=user)
+                try:
+                    return AuthResponse(message="User created", user=user)
+                except ValidationError as ve:
+                    logger.error(f"Validation error for AuthResponse: {user} | {ve}")
+                    raise HTTPException(status_code=500, detail=f"Validation error: {ve}")
 
             except Exception as e:
                 logger.exception("ERROR Exception during signup")
@@ -59,12 +63,16 @@ class AuthController:
 
                 session: Dict[str, Any] = res["session"]
                 logger.info(f"SUCCESS Signin successful for user: {session['user']['id']}")
-                return AuthResponse(
-                    message="Signed in",
-                    access_token=session["access_token"],
-                    refresh_token=session["refresh_token"],
-                    user=session["user"]
-                )
+                try:
+                    return AuthResponse(
+                        message="Signed in",
+                        access_token=session["access_token"],
+                        refresh_token=session["refresh_token"],
+                        user=session["user"]
+                    )
+                except ValidationError as ve:
+                    logger.error(f"Validation error for AuthResponse: {session} | {ve}")
+                    raise HTTPException(status_code=500, detail=f"Validation error: {ve}")
 
             except Exception as e:
                 logger.exception("Exception during signin")

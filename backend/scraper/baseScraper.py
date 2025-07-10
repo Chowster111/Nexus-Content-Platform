@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup, Tag
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.remote.webdriver import WebDriver
+from pydantic import ValidationError
 
 from .utils.embedding_utils import (
     category_embeddings,
@@ -49,7 +50,15 @@ class BaseBlogScraper(ABC):
         self.scroll_page()
         html: str = self.driver.page_source
         self.driver.quit()
-        return BeautifulSoup(html, "html.parser")
+        # Validate scraped data if needed
+        try:
+            soup = BeautifulSoup(html, "html.parser")
+            # Example: validate a dummy ScrapedArticle if you parse here
+            # ScrapedArticle(title="Test", url="http://example.com", source=self.source_name, tags=[], category="General")
+            return soup
+        except ValidationError as ve:
+            print(f"❌ Validation error in get_soup for {self.base_url}: {ve}")
+            raise
 
     def parse_post(self, post: Tag) -> Optional[ScrapedArticle]:
         """Parse a single post element. Must be implemented by subclasses."""

@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 from db.supabase_client import supabase
 from logging_config import logger
 from .utils.retry import with_backoff
+from pydantic import ValidationError
 
 
 class AnalyticsController:
@@ -39,8 +40,14 @@ class AnalyticsController:
                 raise HTTPException(status_code=500, detail=str(e))
 
             articles: List[Dict[str, Any]] = response.data or []
+            if not isinstance(articles, list):
+                logger.error(f"Expected list for articles, got {type(articles)}: {articles}")
+                raise HTTPException(status_code=500, detail="Internal error: articles data is not a list")
             source_count: Dict[str, int] = defaultdict(int)
             for article in articles:
+                if not isinstance(article, dict):
+                    logger.error(f"Expected dict for article, got {type(article)}: {article}")
+                    continue
                 source: str = article.get("source", "Unknown")
                 source_count[source] += 1
 
@@ -91,12 +98,20 @@ class AnalyticsController:
                 top_articles: List[Tuple[str, int]] = sorted(article_like_counts.items(), key=lambda x: x[1], reverse=True)[:3]
                 # Fetch article details
                 articles: List[Dict[str, Any]] = []
+                errors = []
                 for url, count in top_articles:
                     article_resp: Dict[str, Any] = supabase.table("articles").select("title, url, summary, source, category, published_date").eq("url", url).single().execute()
                     if article_resp.data:
                         article: Dict[str, Any] = article_resp.data
                         article["like_count"] = count
-                        articles.append(article)
+                        try:
+                            # Validate structure (optional: use ArticleResponse if fields match)
+                            articles.append(article)
+                        except ValidationError as ve:
+                            logger.error(f"Validation error for top liked article: {article} | {ve}")
+                            errors.append({"article": article, "error": str(ve)})
+                if errors:
+                    logger.warning(f"Some top liked articles could not be validated: {errors}")
                 logger.info(f"SUCCESS Top liked articles: {articles}")
                 return JSONResponse(content={"top_liked_articles": articles}, headers={"Cache-Control": "public, max-age=600"})
             except Exception as e:

@@ -2,6 +2,8 @@ import torch
 from sentence_transformers import SentenceTransformer, util
 
 from db.supabase_client import supabase
+from pydantic import ValidationError
+from models.models import ArticleResponse
 
 model = SentenceTransformer("BAAI/bge-base-en-v1.5")
 device = torch.device("cpu")
@@ -20,11 +22,19 @@ def fetch_articles_with_embeddings():
     print(f"📦 Total fetched: {len(raw_articles)}")
 
     valid_articles = []
+    errors = []
     for article in raw_articles:
         embedding = article.get("embedding")
         if isinstance(embedding, list) and all(isinstance(x, (float, int)) for x in embedding):
-            valid_articles.append(article)
-
+            try:
+                # Validate as ArticleResponse for structure
+                ArticleResponse(**article)
+                valid_articles.append(article)
+            except ValidationError as ve:
+                print(f"❌ Validation error for article: {article} | {ve}")
+                errors.append({"article": article, "error": str(ve)})
+    if errors:
+        print(f"⚠️ Some articles failed validation: {errors}")
     print(f"✅ Valid articles: {len(valid_articles)}")
     return valid_articles
 
@@ -86,15 +96,24 @@ def recommend_articles(query: str, top_k: int = 5, user_id: str = None):
             print(f"❌ Skipping article due to error: {e}")
 
     similarities.sort(reverse=True, key=lambda x: x[0])
-    return [
-        {
-            "title": a["title"],
-            "url": a["url"],
-            "published_date": a["published_date"],
-            "source": a.get("source", ""),
-            "tags": a.get("tags", []),
-            "category": a.get("category", ""),
-            "summary": a.get("summary", ""),
-        }
-        for _, a in similarities[:top_k]
-    ]
+    results = []
+    errors = []
+    for _, a in similarities[:top_k]:
+        try:
+            # Validate output structure
+            results.append({
+                "title": a["title"],
+                "url": a["url"],
+                "published_date": a["published_date"],
+                "source": a.get("source", ""),
+                "tags": a.get("tags", []),
+                "category": a.get("category", ""),
+                "summary": a.get("summary", ""),
+            })
+            ArticleResponse(**results[-1])
+        except ValidationError as ve:
+            print(f"❌ Validation error for recommended article: {a} | {ve}")
+            errors.append({"article": a, "error": str(ve)})
+    if errors:
+        print(f"⚠️ Some recommended articles failed validation: {errors}")
+    return results

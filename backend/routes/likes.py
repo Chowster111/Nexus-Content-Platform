@@ -4,6 +4,7 @@ from db.supabase_client import supabase
 from logging_config import logger
 from .utils.retry import with_backoff
 from ..models.models import LikeRequest, LikeResponse
+from pydantic import ValidationError
 
 
 class LikesController:
@@ -25,14 +26,22 @@ class LikesController:
                     logger.warning(f"INVALID payload received: {body}")
                     raise HTTPException(status_code=400, detail="Missing user_id or likes list")
 
-                insert_payload: List[Dict[str, Any]] = [
-                    {
-                        "user_id": user_id,
-                        "article_url": article.get("url", ""),
-                        "liked": article.get("liked", False),
-                    }
-                    for article in likes
-                ]
+                insert_payload: List[Dict[str, Any]] = []
+                errors = []
+                for article in likes:
+                    try:
+                        # Validate LikeRequest structure
+                        LikeRequest(article_id=article.get("article_id", ""), user_id=user_id)
+                        insert_payload.append({
+                            "user_id": user_id,
+                            "article_url": article.get("url", ""),
+                            "liked": article.get("liked", False),
+                        })
+                    except ValidationError as ve:
+                        logger.error(f"Validation error for like: {article} | {ve}")
+                        errors.append({"like": article, "error": str(ve)})
+                if errors:
+                    logger.warning(f"Some likes could not be validated: {errors}")
 
                 if insert_payload:
                     self.insert_likes(insert_payload)
