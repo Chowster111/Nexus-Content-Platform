@@ -33,7 +33,7 @@ export async function recommendArticles(query: string, userId?: string): Promise
     const res = await axios.get(`${API_BASE}/find/recommend`, {
       params,
     })
-    return res.data || []
+    return res.data.articles || []
   } catch (error) {
     console.error('❌ Error in recommendArticles:', error)
     Sentry.captureException(error)
