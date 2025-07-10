@@ -14,9 +14,98 @@ class HealthController:
 
     def register_routes(self) -> None:
         """Register all health check routes."""
-        @self.router.get("/health")
+        @self.router.get(
+            "/health",
+            summary="System Health Check",
+            description="""
+            Perform a comprehensive health check of the system.
+            
+            This endpoint provides real-time system health information including database
+            connectivity, response latency, and overall system status. It's designed for
+            monitoring systems, load balancers, and DevOps tooling.
+            
+            **Health Check Components:**
+            - Database connectivity (Supabase)
+            - Response latency measurement
+            - System status assessment
+            - Error detection and reporting
+            
+            **Response Statuses:**
+            - `ok`: All systems operational
+            - `degraded`: Some systems experiencing issues
+            - `fail`: Critical system failure
+            
+            **Database Status:**
+            - `ok`: Database accessible and responding
+            - `no data`: Database accessible but no data
+            - `no response`: Database connectivity issues
+            
+            **Monitoring Integration:**
+            - Compatible with Prometheus monitoring
+            - Supports health check endpoints for load balancers
+            - Provides detailed error information for debugging
+            - Includes response latency for performance monitoring
+            
+            **Use Cases:**
+            - Load balancer health checks
+            - Kubernetes liveness/readiness probes
+            - Monitoring dashboard integration
+            - DevOps automation and alerting
+            """,
+            response_description="Comprehensive system health status with database connectivity and latency",
+            tags=["Health"]
+        )
         def health_check() -> Dict[str, Any]:
-            """Perform a comprehensive health check."""
+            """
+            Perform a comprehensive health check of the system.
+            
+            Checks database connectivity, measures response latency, and provides
+            overall system status for monitoring and load balancing purposes.
+            
+            **Response Format:**
+            ```json
+            {
+              "status": "ok|degraded|fail",
+              "database": "ok|no_data|no_response",
+              "latency_ms": 15.23
+            }
+            ```
+            
+            **Example Responses:**
+            
+            **Healthy System:**
+            ```json
+            {
+              "status": "ok",
+              "database": "ok",
+              "latency_ms": 12.45
+            }
+            ```
+            
+            **Degraded System:**
+            ```json
+            {
+              "status": "degraded",
+              "database": "no_data",
+              "latency_ms": 45.67
+            }
+            ```
+            
+            **Failed System:**
+            ```json
+            {
+              "status": "fail",
+              "error": "Database connection timeout",
+              "latency_ms": 5000.0
+            }
+            ```
+            
+            **Monitoring Integration:**
+            - HTTP 200: System healthy or degraded
+            - HTTP 500: System failed
+            - Response time indicates system performance
+            - Database status shows data layer health
+            """
             start_time: float = time.time()
             try:
                 response: Dict[str, Any] = self.check_database()

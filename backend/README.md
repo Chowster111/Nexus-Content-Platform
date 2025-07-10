@@ -19,6 +19,48 @@ This backend uses:
 
 ---
 
+## API Documentation
+
+### 📚 Comprehensive API Documentation
+
+This project includes extensive API documentation following modern best practices:
+
+- **[Complete API Reference](API.md)** - Detailed endpoint documentation with examples
+- **Interactive Swagger UI** - Available at `/docs` when running the server
+- **OpenAPI Specification** - Auto-generated from FastAPI route decorators
+- **Code Examples** - Python, JavaScript, and cURL examples for all endpoints
+
+### 🎯 Key Documentation Features
+
+- **Inline Documentation** - All endpoints have comprehensive docstrings and examples
+- **Request/Response Examples** - Real-world usage examples for every endpoint
+- **Error Handling** - Detailed error scenarios and status codes
+- **Authentication Guide** - Complete auth flow with token management
+- **Rate Limiting** - Clear limits and best practices
+- **SDK Examples** - Ready-to-use code snippets in multiple languages
+
+### 🚀 Quick Start with API
+
+```bash
+# Start the server
+uvicorn app:app --reload --host 0.0.0.0 --port 8000
+
+# View interactive documentation
+open http://localhost:8000/docs
+
+# View API reference
+open http://localhost:8000/redoc
+```
+
+### 📖 Documentation Structure
+
+- **API.md** - Complete API reference with all endpoints
+- **README.md** - Project overview and setup instructions
+- **DEPLOYMENT.md** - Production deployment and monitoring guide
+- **Inline Docs** - FastAPI route decorators with detailed descriptions
+
+---
+
 ## Features
 
 * Blog scraper for multiple sources using Selenium and BeautifulSoup.
@@ -60,6 +102,7 @@ backend/
 ├── tests/                  # Unit, integration, and deployment tests
 ├── logging_config.py       # Centralized structured logger
 ├── main.py                 # FastAPI app entry point
+├── API.md                  # Complete API documentation
 └── Dockerfile
 ```
 
@@ -78,6 +121,8 @@ backend/
 | `/auth/signin`         | Sign in with Supabase credentials.                               |
 | `/health`              | Health check endpoint that verifies DB connectivity and latency. |
 | `/metrics`             | Prometheus metrics exporter for Grafana dashboards.              |
+
+**📖 For complete API documentation, see [API.md](API.md)**
 
 ---
 
@@ -175,10 +220,16 @@ return RecommendationResponse(
 4. **Run the FastAPI server**
 
    ```bash
-   uvicorn main:app --reload --host 0.0.0.0 --port 8000
+   uvicorn app:app --reload --host 0.0.0.0 --port 8000
    ```
 
    The API will be available at `http://localhost:8000`.
+
+5. **View API Documentation**
+
+   - Interactive docs: `http://localhost:8000/docs`
+   - ReDoc docs: `http://localhost:8000/redoc`
+   - Complete reference: See [API.md](API.md)
 
 ---
 
