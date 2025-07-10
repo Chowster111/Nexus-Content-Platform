@@ -5,13 +5,9 @@ from logging_config import logger
 from .utils.retry import with_backoff
 from collections import defaultdict
 from pydantic import ValidationError
-from ..models.models import (
-    ArticleResponse, 
-    TagCount, 
-    SortOrder, 
-    ArticleCategory, 
-    ArticleSource
-)
+from ..models.article import ArticleResponse, ArticleCategory, ArticleSource
+from ..models.analytics import TagCount
+from ..models.recommendation import SortOrder
 
 
 class ArticlesController:

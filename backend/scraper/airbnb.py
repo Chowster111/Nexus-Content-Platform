@@ -3,7 +3,7 @@ from typing import List, Optional
 from bs4 import BeautifulSoup, Tag
 
 from .baseScraper import BaseBlogScraper
-from ..models.models import ScrapedArticle
+from ..models.scraper import ScrapedArticle
 
 device = "cpu"
 

@@ -13,7 +13,7 @@ from scraper.robinhood import RobinhoodScraper
 from scraper.doordash import DoorDashScraper
 from scraper.meta import MetaEngineeringScraper
 from pydantic import ValidationError
-from models.models import ScrapedArticle
+from models.scraper import ScrapedArticle
 
 SCRAPER_MAP = {
     "netflix": NetflixScraper,

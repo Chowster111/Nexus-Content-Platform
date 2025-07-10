@@ -7,7 +7,7 @@ from selenium.webdriver.remote.webdriver import WebDriver
 import time
 
 from .baseScraper import BaseBlogScraper
-from ..models.models import ScrapedArticle
+from ..models.scraper import ScrapedArticle
 
 
 class DoorDashScraper(BaseBlogScraper):
