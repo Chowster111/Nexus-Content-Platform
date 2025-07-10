@@ -3,7 +3,7 @@ from fastapi import APIRouter, Request, HTTPException
 from db.supabase_client import supabase
 from logging_config import logger
 from .utils.retry import with_backoff
-from ..models.likes import LikeRequest, LikeResponse
+from .models.likes import LikeRequest, LikeResponse
 from pydantic import ValidationError
 
 
@@ -33,9 +33,9 @@ class LikesController:
                         # Validate LikeRequest structure
                         LikeRequest(article_id=article.get("article_id", ""), user_id=user_id)
                         insert_payload.append({
-                            "user_id": user_id,
-                            "article_url": article.get("url", ""),
-                            "liked": article.get("liked", False),
+                        "user_id": user_id,
+                        "article_url": article.get("url", ""),
+                        "liked": article.get("liked", False),
                         })
                     except ValidationError as ve:
                         logger.error(f"Validation error for like: {article} | {ve}")

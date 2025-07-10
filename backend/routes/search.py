@@ -7,7 +7,7 @@ from db.supabase_client import supabase
 from .utils.embedding_utils import safe_encode, semantic_model
 from logging_config import logger
 from .utils.retry import with_backoff
-from ..models.search import SearchResult, SearchResponse
+from .models.search import SearchResult, SearchResponse
 from pydantic import ValidationError
 
 
@@ -44,14 +44,14 @@ class SearchController:
         for _, article in sorted_results[:10]:
             try:
                 top_results.append(SearchResult(
-                    title=article["title"],
-                    url=article["url"],
-                    published_date=article["published_date"],
-                    content=article.get("content", ""),
-                    source=article.get("source", ""),
-                    tags=article.get("tags", []),
-                    category=article.get("category", ""),
-                    summary=article.get("summary", ""),
+                title=article["title"],
+                url=article["url"],
+                published_date=article["published_date"],
+                content=article.get("content", ""),
+                source=article.get("source", ""),
+                tags=article.get("tags", []),
+                category=article.get("category", ""),
+                summary=article.get("summary", ""),
                 ))
             except ValidationError as ve:
                 logger.error(f"Validation error for article: {article} | {ve}")

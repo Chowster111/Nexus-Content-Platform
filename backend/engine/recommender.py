@@ -102,13 +102,13 @@ def recommend_articles(query: str, top_k: int = 5, user_id: str = None):
         try:
             # Validate output structure
             results.append({
-                "title": a["title"],
-                "url": a["url"],
-                "published_date": a["published_date"],
-                "source": a.get("source", ""),
-                "tags": a.get("tags", []),
-                "category": a.get("category", ""),
-                "summary": a.get("summary", ""),
+            "title": a["title"],
+            "url": a["url"],
+            "published_date": a["published_date"],
+            "source": a.get("source", ""),
+            "tags": a.get("tags", []),
+            "category": a.get("category", ""),
+            "summary": a.get("summary", ""),
             })
             ArticleResponse(**results[-1])
         except ValidationError as ve:
