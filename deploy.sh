@@ -140,6 +140,16 @@ cleanup() {
     fi
 }
 
+deploy_scraper() {
+    print_status "Building scraper Docker image..."
+    docker build -f backend/scraper/Dockerfile -t scraper-batch backend/scraper
+    print_status "Tagging and pushing scraper image to ECR..."
+    SCRAPER_REPO_URL=$(terraform -chdir=infra/terraform output -raw ecr_scraper_url)
+    docker tag scraper-batch:latest $SCRAPER_REPO_URL:latest
+    docker push $SCRAPER_REPO_URL:latest
+    print_success "Scraper image pushed to ECR"
+}
+
 # Function to show usage
 show_usage() {
     echo "Usage: $0 [OPTION]"
@@ -149,6 +159,7 @@ show_usage() {
     echo "  plan      - Create a Terraform plan"
     echo "  apply     - Apply Terraform changes"
     echo "  deploy    - Full deployment (init, plan, apply)"
+    echo "  deploy-scraper - Build and push the scraper Docker image to ECR"
     echo "  destroy   - Destroy all resources (use with caution)"
     echo "  validate  - Validate Terraform configuration"
     echo "  format    - Format Terraform code"
@@ -160,6 +171,7 @@ show_usage() {
     echo "  $0 plan      # Create a plan"
     echo "  $0 apply     # Apply changes"
     echo "  $0 deploy    # Full deployment"
+    echo "  $0 deploy-scraper # Build and push scraper image"
 }
 
 # Function to handle destroy
@@ -212,6 +224,9 @@ main() {
             $0 plan
             $0 apply
             print_success "Deployment complete!"
+            ;;
+        "deploy-scraper")
+            deploy_scraper
             ;;
         "destroy")
             cd $TERRAFORM_DIR

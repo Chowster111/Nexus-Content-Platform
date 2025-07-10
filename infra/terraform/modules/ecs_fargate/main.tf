@@ -3,6 +3,7 @@ variable "public_subnet_ids" {}
 variable "alb_sg_id" {}
 variable "target_group_arn" {}
 variable "backend_repo_url" {}
+variable "scraper_repo_url" {}
 
 resource "aws_security_group" "ecs_service" {
   vpc_id = var.vpc_id
@@ -41,6 +42,21 @@ resource "aws_ecs_task_definition" "backend" {
       containerPort = 3000
       hostPort      = 3000
     }]
+  }])
+}
+
+resource "aws_ecs_task_definition" "scraper_batch" {
+  family                   = "scraper-batch-task"
+  requires_compatibilities = ["FARGATE"]
+  network_mode             = "awsvpc"
+  cpu                      = "512"
+  memory                   = "1024"
+
+  container_definitions = jsonencode([{
+    name  = "scraper-batch"
+    image = "${var.scraper_repo_url}:latest"
+    essential = true
+    environment = []
   }])
 }
 
