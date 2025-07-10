@@ -3,7 +3,7 @@ from fastapi import APIRouter, Request, HTTPException
 from db.supabase_client import supabase
 from logging_config import logger
 from .utils.retry import with_backoff
-from ..models.models import LikeRequest, LikeResponse
+from ..models.likes import LikeRequest, LikeResponse
 from pydantic import ValidationError
 
 

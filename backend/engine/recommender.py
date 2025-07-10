@@ -3,7 +3,7 @@ from sentence_transformers import SentenceTransformer, util
 
 from db.supabase_client import supabase
 from pydantic import ValidationError
-from models.models import ArticleResponse
+from models.article import ArticleResponse
 
 model = SentenceTransformer("BAAI/bge-base-en-v1.5")
 device = torch.device("cpu")
