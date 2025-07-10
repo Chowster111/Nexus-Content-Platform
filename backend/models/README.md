@@ -64,5 +64,3 @@ except ValidationError as ve:
 ```
 
 ---
-
-**For questions or to propose new model structure, see the backend maintainers or open a PR!** 

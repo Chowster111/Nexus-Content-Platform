@@ -60,3 +60,7 @@ output "ecr_frontend_url" {
 output "lambda_arn" {
   value = module.lambda.lambda_arn
 }
+
+output "ecr_scraper_url" {
+  value = module.ecr.scraper_repo_url
+}
