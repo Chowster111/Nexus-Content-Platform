@@ -14,7 +14,7 @@ from .utils.embedding_utils import (
     safe_encode,
     semantic_model,
 )
-from ..models.scraper import ScrapedArticle, ScraperConfig
+from models.scraper import ScrapedArticle, ScraperConfig
 
 device = "cpu"
 

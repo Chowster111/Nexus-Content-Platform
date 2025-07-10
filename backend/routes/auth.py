@@ -3,8 +3,8 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, ValidationError
 from db.supabase_client import supabase
 from logging_config import logger
-from ..models.auth import SignupRequest, SigninRequest, AuthResponse
-from ..models.user import User
+from models.auth import SignupRequest, SigninRequest, AuthResponse
+from models.user import User
 
 
 class AuthController:

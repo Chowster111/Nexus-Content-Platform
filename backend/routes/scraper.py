@@ -5,7 +5,7 @@ from fastapi import APIRouter, HTTPException
 from logging_config import logger
 from .utils.retry import with_backoff
 from .utils.trigger_scrape import SCRAPER_MAP, trigger_scrape
-from ..models.scraper import ScraperResult, ScrapedArticle
+from models.scraper import ScraperResult, ScrapedArticle
 from pydantic import ValidationError
 
 
