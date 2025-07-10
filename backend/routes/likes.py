@@ -14,9 +14,86 @@ class LikesController:
 
     def register_routes(self) -> None:
         """Register all likes routes."""
-        @self.router.post("/likes", response_model=LikeResponse)
+        @self.router.post(
+            "/likes", 
+            response_model=LikeResponse,
+            summary="Save User Likes",
+            description="""
+            Save user likes and dislikes for articles to enable personalized recommendations.
+            
+            This endpoint allows users to save their preferences for articles, which are then
+            used to improve personalized recommendations. The system tracks both likes and
+            dislikes to build a comprehensive user preference profile.
+            
+            **Features:**
+            - Batch like/dislike saving for multiple articles
+            - User preference learning for recommendations
+            - Validation of article data before saving
+            - Error handling for invalid data
+            - Real-time preference updates
+            
+            **Personalization Benefits:**
+            - Improves recommendation accuracy
+            - Learns user preferences over time
+            - Enables collaborative filtering
+            - Provides personalized content discovery
+            
+            **Data Structure:**
+            - User ID for preference tracking
+            - Article URL for content identification
+            - Like/dislike boolean for preference
+            - Timestamp for preference history
+            """,
+            response_description="Confirmation of saved likes with count and status",
+            tags=["User Preferences"]
+        )
         async def save_likes(request: Request) -> LikeResponse:
-            """Save user likes for articles."""
+            """
+            Save user likes and dislikes for articles.
+            
+            Accepts a batch of user preferences for articles and saves them to the database.
+            These preferences are used to improve personalized recommendations and content
+            discovery for the user.
+            
+            **Request Body:**
+            ```json
+            {
+              "user_id": "user-123",
+              "likes": [
+                {
+                  "article_id": "article-456",
+                  "url": "https://netflix.com/tech-blog/article",
+                  "liked": true
+                },
+                {
+                  "article_id": "article-789",
+                  "url": "https://airbnb.com/engineering/article",
+                  "liked": false
+                }
+              ]
+            }
+            ```
+            
+            **Response Example:**
+            ```json
+            {
+              "message": "3 likes saved",
+              "liked": true
+            }
+            ```
+            
+            **Validation:**
+            - User ID must be provided and valid
+            - Likes array must contain valid article data
+            - Article URLs are validated for format
+            - Duplicate likes are handled gracefully
+            
+            **Error Scenarios:**
+            - 400: Missing user_id or invalid likes format
+            - 400: Invalid article data in likes array
+            - 500: Database insertion error
+            - 500: Validation error for article data
+            """
             try:
                 body: Dict[str, Any] = await request.json()
                 user_id: Optional[str] = body.get("user_id")

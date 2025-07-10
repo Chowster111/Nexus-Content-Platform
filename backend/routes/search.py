@@ -1,7 +1,7 @@
 # backend/routes/search_controller.py
 
 from typing import List, Dict, Any, Tuple, Optional
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, HTTPException
 from sentence_transformers import util
 from db.supabase_client import supabase
 from .utils.embedding_utils import safe_encode, semantic_model
@@ -60,8 +60,44 @@ class SearchController:
             logger.warning(f"Some search results could not be validated: {errors}")
         return top_results
 
-    async def search_articles(self, q: str = Query(..., description="Search query")) -> SearchResponse:
-        """Search articles based on query."""
+    async def search_articles(
+        self, 
+        q: str = Query(
+            ..., 
+            description="Search query for finding relevant articles",
+            example="machine learning deployment best practices",
+            min_length=1,
+            max_length=500
+        )
+    ) -> SearchResponse:
+        """
+        Search articles using semantic similarity.
+        
+        This endpoint performs semantic search using BGE embeddings to find articles that are semantically 
+        similar to the provided query. The search considers article content, titles, and tags to provide 
+        the most relevant results.
+        
+        **Features:**
+        - Semantic similarity using BGE embeddings
+        - Automatic ranking by relevance score
+        - Support for natural language queries
+        - Returns top 10 most relevant articles
+        
+        **Example Queries:**
+        - "machine learning deployment"
+        - "microservices architecture patterns"
+        - "database optimization techniques"
+        - "scalable system design"
+        
+        **Response Format:**
+        Returns a list of articles ranked by semantic similarity, with each article containing
+        title, URL, publication date, content summary, source, tags, and category information.
+        
+        **Error Handling:**
+        - Returns empty results if no articles match
+        - Handles embedding generation failures gracefully
+        - Logs validation errors for debugging
+        """
         logger.info(f"Incoming search query: '{q}'")
 
         query_embedding: Optional[List[float]] = safe_encode(q, semantic_model)

@@ -105,8 +105,7 @@ class AnalyticsController:
                         article: Dict[str, Any] = article_resp.data
                         article["like_count"] = count
                         try:
-                            # Validate structure (optional: use ArticleResponse if fields match)
-                        articles.append(article)
+                            articles.append(article)
                         except ValidationError as ve:
                             logger.error(f"Validation error for top liked article: {article} | {ve}")
                             errors.append({"article": article, "error": str(ve)})
