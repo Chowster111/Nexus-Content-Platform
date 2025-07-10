@@ -1,14 +1,17 @@
 from datetime import datetime
-from bs4 import BeautifulSoup
+from typing import List, Optional
+from bs4 import BeautifulSoup, Tag
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.remote.webdriver import WebDriver
 import time
 
 from .baseScraper import BaseBlogScraper
+from ..models.models import ScrapedArticle
 
 
 class DoorDashScraper(BaseBlogScraper):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             source_name="DoorDash Engineering Blog",
             base_url="https://careersatdoordash.com/engineering-blog/",
@@ -18,10 +21,11 @@ class DoorDashScraper(BaseBlogScraper):
         chrome_options.add_argument("--headless")
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
-        self.driver = webdriver.Chrome(options=chrome_options)
+        self.driver: WebDriver = webdriver.Chrome(options=chrome_options)
 
-    def get_soup_pages(self):
-        soups = []
+    def get_soup_pages(self) -> List[BeautifulSoup]:
+        """Get BeautifulSoup objects from multiple pages using load more button."""
+        soups: List[BeautifulSoup] = []
         try:
             print(f"🌐 Visiting DoorDash Engineering Blog — {self.base_url}")
             self.driver.get(self.base_url)
@@ -29,8 +33,8 @@ class DoorDashScraper(BaseBlogScraper):
             while True:
                 # Wait for posts to load
                 time.sleep(2)
-                soup = BeautifulSoup(self.driver.page_source, "html.parser")
-                posts = self.select_posts(soup)
+                soup: BeautifulSoup = BeautifulSoup(self.driver.page_source, "html.parser")
+                posts: List[Tag] = self.select_posts(soup)
                 soups.append(soup)
 
                 # Try to click "See More"
@@ -51,41 +55,44 @@ class DoorDashScraper(BaseBlogScraper):
 
         return soups
 
-    def select_posts(self, soup):
+    def select_posts(self, soup: BeautifulSoup) -> List[Tag]:
+        """Select post elements from the DoorDash blog."""
         return soup.select("div.fade.h-full")
 
-    def parse_post(self, post):
-        a_tag = post.select_one("a")
-        url = a_tag["href"] if a_tag else None
+    def parse_post(self, post: Tag) -> Optional[ScrapedArticle]:
+        """Parse a single DoorDash post element."""
+        a_tag: Optional[Tag] = post.select_one("a")
+        url: Optional[str] = a_tag["href"] if a_tag else None
 
-        title_el = post.select_one("p.with-tags")
-        title = title_el.get_text(strip=True) if title_el else None
+        title_el: Optional[Tag] = post.select_one("p.with-tags")
+        title: Optional[str] = title_el.get_text(strip=True) if title_el else None
 
-        tags = []
-        tag_els = post.select("div.flex.items-center.flex-wrap div.bg-gray")
+        tags: List[str] = []
+        tag_els: List[Tag] = post.select("div.flex.items-center.flex-wrap div.bg-gray")
         for tag_el in tag_els:
-            tag = tag_el.get_text(strip=True)
+            tag: str = tag_el.get_text(strip=True)
             if tag:
                 tags.append(tag)
 
         if title and url:
-            article = self.enrich_article(title, url, None, summary="")
-            if tags:
-                article["tags"] = tags
+            article: Optional[ScrapedArticle] = self.enrich_article(title, url, None, summary="")
+            if article and tags:
+                article.tags = tags
             return article
 
         print(f"⚠️ Missing title or URL for DoorDash post.")
         return None
 
-    def scrape(self):
-        soups = self.get_soup_pages()
-        articles = []
+    def scrape(self) -> List[ScrapedArticle]:
+        """Main scraping method for DoorDash articles."""
+        soups: List[BeautifulSoup] = self.get_soup_pages()
+        articles: List[ScrapedArticle] = []
 
         for soup in soups:
-            posts = self.select_posts(soup)
+            posts: List[Tag] = self.select_posts(soup)
             for post in posts:
                 try:
-                    article = self.parse_post(post)
+                    article: Optional[ScrapedArticle] = self.parse_post(post)
                     if article:
                         articles.append(article)
                 except Exception as e:

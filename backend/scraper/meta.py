@@ -1,14 +1,17 @@
 from datetime import datetime
-from bs4 import BeautifulSoup
+from typing import List, Optional
+from bs4 import BeautifulSoup, Tag
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.remote.webdriver import WebDriver
 import time
 
 from .baseScraper import BaseBlogScraper
+from ..models.models import ScrapedArticle
 
 
 class MetaEngineeringScraper(BaseBlogScraper):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             source_name="Meta Engineering Blog",
             base_url="https://engineering.fb.com/",
@@ -18,12 +21,13 @@ class MetaEngineeringScraper(BaseBlogScraper):
         chrome_options.add_argument("--headless")
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
-        self.driver = webdriver.Chrome(options=chrome_options)
+        self.driver: WebDriver = webdriver.Chrome(options=chrome_options)
 
-    def get_soup_pages(self):
-        soups = []
-        click_count = 0
-        MAX_CLICKS = 30 
+    def get_soup_pages(self) -> List[BeautifulSoup]:
+        """Get BeautifulSoup objects from multiple pages using load more button."""
+        soups: List[BeautifulSoup] = []
+        click_count: int = 0
+        MAX_CLICKS: int = 30 
 
         try:
             print(f"🌐 Visiting Meta Engineering Blog — {self.base_url}")
@@ -31,7 +35,7 @@ class MetaEngineeringScraper(BaseBlogScraper):
 
             while click_count < MAX_CLICKS:
                 time.sleep(2)
-                soup = BeautifulSoup(self.driver.page_source, "html.parser")
+                soup: BeautifulSoup = BeautifulSoup(self.driver.page_source, "html.parser")
                 soups.append(soup)
 
                 try:
@@ -55,37 +59,40 @@ class MetaEngineeringScraper(BaseBlogScraper):
             self.driver.quit()
         return soups
 
-    def select_posts(self, soup):
+    def select_posts(self, soup: BeautifulSoup) -> List[Tag]:
+        """Select post elements from the Meta blog."""
         return soup.select("article.post")
 
-    def parse_post(self, post):
-        a_tag = post.select_one(".entry-title a")
-        url = a_tag["href"] if a_tag else None
-        title = a_tag.get_text(strip=True) if a_tag else None
+    def parse_post(self, post: Tag) -> Optional[ScrapedArticle]:
+        """Parse a single Meta post element."""
+        a_tag: Optional[Tag] = post.select_one(".entry-title a")
+        url: Optional[str] = a_tag["href"] if a_tag else None
+        title: Optional[str] = a_tag.get_text(strip=True) if a_tag else None
 
-        tag_els = post.select("span.cat-links a.category")
-        tags = [t.get_text(strip=True) for t in tag_els]
+        tag_els: List[Tag] = post.select("span.cat-links a.category")
+        tags: List[str] = [t.get_text(strip=True) for t in tag_els]
 
-        published_date = None
+        published_date: Optional[datetime] = None
 
         if title and url:
-            article = self.enrich_article(title, url, published_date, summary="")
-            if tags:
-                article["tags"] = tags
+            article: Optional[ScrapedArticle] = self.enrich_article(title, url, published_date, summary="")
+            if article and tags:
+                article.tags = tags
             return article
 
         print(f"⚠️ Missing title or URL for Meta post.")
         return None
 
-    def scrape(self):
-        soups = self.get_soup_pages()
-        articles = []
+    def scrape(self) -> List[ScrapedArticle]:
+        """Main scraping method for Meta Engineering articles."""
+        soups: List[BeautifulSoup] = self.get_soup_pages()
+        articles: List[ScrapedArticle] = []
 
         for soup in soups:
-            posts = self.select_posts(soup)
+            posts: List[Tag] = self.select_posts(soup)
             for post in posts:
                 try:
-                    article = self.parse_post(post)
+                    article: Optional[ScrapedArticle] = self.parse_post(post)
                     if article:
                         articles.append(article)
                 except Exception as e:

@@ -1,26 +1,31 @@
+from typing import List, Dict, Any, Optional
 from fastapi import APIRouter, Request, HTTPException
 from db.supabase_client import supabase
 from logging_config import logger
 from .utils.retry import with_backoff
+from ..models.models import LikeRequest, LikeResponse
+
 
 class LikesController:
-    def __init__(self):
+    def __init__(self) -> None:
         self.router = APIRouter()
         self.register_routes()
 
-    def register_routes(self):
-        @self.router.post("/likes")
-        async def save_likes(request: Request):
+    def register_routes(self) -> None:
+        """Register all likes routes."""
+        @self.router.post("/likes", response_model=LikeResponse)
+        async def save_likes(request: Request) -> LikeResponse:
+            """Save user likes for articles."""
             try:
-                body = await request.json()
-                user_id = body.get("user_id")
-                likes = body.get("likes", [])
+                body: Dict[str, Any] = await request.json()
+                user_id: Optional[str] = body.get("user_id")
+                likes: List[Dict[str, Any]] = body.get("likes", [])
 
                 if not user_id or not isinstance(likes, list):
                     logger.warning(f"INVALID payload received: {body}")
                     raise HTTPException(status_code=400, detail="Missing user_id or likes list")
 
-                insert_payload = [
+                insert_payload: List[Dict[str, Any]] = [
                     {
                         "user_id": user_id,
                         "article_url": article.get("url", ""),
@@ -33,13 +38,14 @@ class LikesController:
                     self.insert_likes(insert_payload)
 
                 logger.info(f"SAVED {len(insert_payload)} likes for user {user_id}")
-                return {"message": f"{len(insert_payload)} likes saved"}
+                return LikeResponse(message=f"{len(insert_payload)} likes saved", liked=True)
 
             except Exception as e:
                 logger.exception("ERROR: Failed to save likes")
                 raise HTTPException(status_code=500, detail="Internal server error")
 
     @with_backoff()
-    def insert_likes(self, payload):
+    def insert_likes(self, payload: List[Dict[str, Any]]) -> None:
+        """Insert likes into the database."""
         logger.info(f"SUCCESS Inserting {len(payload)} likes into Supabase")
         supabase.table("likes").insert(payload).execute()
