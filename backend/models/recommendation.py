@@ -1,6 +1,13 @@
 from typing import Optional, List
 from pydantic import BaseModel, Field
+from enum import Enum
 from .article import ArticleResponse
+
+
+class SortOrder(str, Enum):
+    """Sort order enumeration for article queries."""
+    LATEST = "latest"
+    OLDEST = "oldest"
 
 class RecommendationRequest(BaseModel):
     """

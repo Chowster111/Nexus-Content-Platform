@@ -12,6 +12,9 @@ Each file contains models for a specific domain or feature:
 - `analytics.py`       — TagCount
 - `recommendation.py`  — RecommendationRequest, RecommendationResponse
 - `scraper.py`         — ScraperConfig, ScrapedArticle, ScraperResult
+- `likes.py`           — LikeRequest, LikeResponse, LikeRecord
+- `search.py`          — SearchResult, SearchResponse, SearchRequest
+- `health.py`          — HealthCheckResponse, SystemStatus, DetailedHealthResponse
 - `models.py`          — Re-exports all models for backward compatibility
 - `__init__.py`        — Re-exports all models for convenient imports
 

@@ -3,8 +3,8 @@ from fastapi import APIRouter, Query, HTTPException
 from engine.recommender import recommend_articles
 from logging_config import logger
 from .utils.retry import with_backoff
-from ..models.recommendation import RecommendationRequest, RecommendationResponse
-from ..models.article import ArticleResponse
+from models.recommendation import RecommendationRequest, RecommendationResponse
+from models.article import ArticleResponse
 from pydantic import ValidationError
 
 

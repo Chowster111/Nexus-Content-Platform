@@ -3,7 +3,8 @@ from fastapi import APIRouter, HTTPException
 from db.supabase_client import supabase
 from logging_config import logger
 import time
-from pydantic import ValidationError, BaseModel
+from pydantic import ValidationError
+from models.health import HealthCheckResponse
 
 
 class HealthController:
@@ -65,7 +66,3 @@ class HealthController:
         return "ok"
 
 
-class HealthCheckResponse(BaseModel):
-    status: str
-    database: str
-    latency_ms: float

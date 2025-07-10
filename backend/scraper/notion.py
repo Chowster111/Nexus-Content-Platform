@@ -6,7 +6,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.remote.webdriver import WebDriver
 
 from .baseScraper import BaseBlogScraper
-from ..models.scraper import ScrapedArticle
+from models.scraper import ScrapedArticle
 
 
 class NotionScraper(BaseBlogScraper):
