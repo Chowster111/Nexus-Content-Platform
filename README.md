@@ -1,4 +1,4 @@
-# Engineering Blog Recommender
+# Nexys Content Platform
 
 **A production-ready, AI-powered content recommendation system that discovers, classifies, tags, embeds, and delivers over 10,000 articles from world-leading engineering blogs.**  
 Built for real-time semantic search, personalized recommendations, and developer insights — with scalable architecture, robust error handling, and modern observability baked in.
