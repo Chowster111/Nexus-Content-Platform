@@ -7,7 +7,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.remote.webdriver import WebDriver
 from pydantic import ValidationError
 
-from .utils.embedding_utils import (
+from ..utils.embedding_utils import (
     category_embeddings,
     classify_article_semantically,
     kw_model,
