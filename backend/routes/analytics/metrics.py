@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
 from db.supabase_client import supabase
 from logging_config import logger
-from .utils.retry import with_backoff
+from ..utils.retry import with_backoff
 from pydantic import ValidationError
 
 
