@@ -1,5 +1,8 @@
 # Models Directory Structure
 
+> **Note:**
+> Both `__init__.py` and `models.py` in this directory currently serve the same purpose: they re-export all models for backward compatibility. This allows both old and new import styles to work. Once all code is migrated to use the new import paths (directly from submodules or via `__init__.py`), `models.py` can be safely removed.
+
 This directory contains all Pydantic models organized by domain and functionality.
 
 ## Directory Structure
