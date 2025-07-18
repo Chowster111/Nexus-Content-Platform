@@ -2,7 +2,7 @@ from typing import List, Optional, Dict, Any
 from fastapi import APIRouter, Query, HTTPException, Path
 from db.supabase_client import supabase
 from logging_config import logger
-from .utils.retry import with_backoff
+from ..utils.retry import with_backoff
 from collections import defaultdict
 from pydantic import ValidationError
 from models.article import ArticleResponse, ArticleCategory, ArticleSource

@@ -3,8 +3,8 @@
 from typing import Dict, Any, List, Callable, Optional
 from fastapi import APIRouter, HTTPException, Path
 from logging_config import logger
-from .utils.retry import with_backoff
-from .utils.trigger_scrape import SCRAPER_MAP, trigger_scrape
+from ..utils.retry import with_backoff
+from ..utils.trigger_scrape import SCRAPER_MAP, trigger_scrape
 from models.scraper import ScraperResult, ScrapedArticle
 from pydantic import ValidationError
 
