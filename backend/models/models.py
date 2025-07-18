@@ -1,14 +1,90 @@
-# This file now re-exports models from submodules for backward compatibility.
-# Please import models directly from their respective files for new code.
+"""
+Backward compatibility module for models.
 
-from .article import Article, ArticleResponse, ArticleCategory, ArticleSource
-from .user import User
-from .auth import SignupRequest, SigninRequest, AuthResponse
-from .analytics import TagCount
-from .recommendation import RecommendationRequest, RecommendationResponse
-from .scraper import ScraperConfig, ScrapedArticle, ScraperResult
-from .likes import LikeRequest, LikeResponse, LikeRecord
-from .search import SearchResult, SearchResponse, SearchRequest
-from .health import HealthCheckResponse, SystemStatus, DetailedHealthResponse
+This file re-exports models from the new organized structure to maintain
+backward compatibility with existing code. For new code, import directly
+from the specific submodules.
+"""
 
-# If any models remain here, move them to the appropriate submodule.
+# Core domain models
+from .core import (
+    Article, ArticleResponse, ArticleCategory, ArticleSource, User,
+    BaseEntity, BaseResponse, PaginationParams, SortParams, FilterParams
+)
+
+# API request/response models
+from .api import (
+    SignupRequest, SigninRequest, AuthResponse,
+    SearchRequest, SearchResponse, SearchResult,
+    RecommendationRequest, RecommendationResponse, SortOrder,
+    LikeRequest, LikeResponse, LikeRecord
+)
+
+# Analytics models
+from .analytics import (
+    TagCount, ReportMetadata, SourceAnalytics, CategoryAnalytics,
+    UserEngagementReport, ContentPerformanceReport
+)
+
+# System models
+from .system import (
+    HealthCheckResponse, SystemStatus, DetailedHealthResponse,
+    MetricPoint, SystemMetric, AlertRule, Alert,
+    ServiceStatus, SystemOverview
+)
+
+# Scraping models
+from .scraping import ScraperConfig, ScrapedArticle, ScraperResult
+
+# For backward compatibility, export all models
+__all__ = [
+    # Core models
+    "Article",
+    "ArticleResponse",
+    "ArticleCategory", 
+    "ArticleSource",
+    "User",
+    "BaseEntity",
+    "BaseResponse",
+    "PaginationParams",
+    "SortParams",
+    "FilterParams",
+    
+    # API models
+    "SignupRequest",
+    "SigninRequest",
+    "AuthResponse",
+    "SearchRequest",
+    "SearchResponse", 
+    "SearchResult",
+    "RecommendationRequest",
+    "RecommendationResponse",
+    "SortOrder",
+    "LikeRequest",
+    "LikeResponse",
+    "LikeRecord",
+    
+    # Analytics models
+    "TagCount",
+    "ReportMetadata",
+    "SourceAnalytics",
+    "CategoryAnalytics",
+    "UserEngagementReport",
+    "ContentPerformanceReport",
+    
+    # System models
+    "HealthCheckResponse",
+    "SystemStatus",
+    "DetailedHealthResponse",
+    "MetricPoint",
+    "SystemMetric",
+    "AlertRule",
+    "Alert",
+    "ServiceStatus",
+    "SystemOverview",
+    
+    # Scraping models
+    "ScraperConfig",
+    "ScrapedArticle", 
+    "ScraperResult"
+]

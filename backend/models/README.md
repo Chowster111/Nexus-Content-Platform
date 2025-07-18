@@ -1,69 +1,101 @@
-# Models Directory
+# Models Directory Structure
 
-This directory contains all Pydantic models used throughout the backend, organized by domain for clarity and maintainability.
+This directory contains all Pydantic models organized by domain and functionality.
 
-## Structure
+## Directory Structure
 
-Each file contains models for a specific domain or feature:
-
-- `article.py`         — Article, ArticleResponse, ArticleCategory, ArticleSource
-- `user.py`            — User
-- `auth.py`            — SignupRequest, SigninRequest, AuthResponse
-- `analytics.py`       — TagCount
-- `recommendation.py`  — RecommendationRequest, RecommendationResponse
-- `scraper.py`         — ScraperConfig, ScrapedArticle, ScraperResult
-- `likes.py`           — LikeRequest, LikeResponse, LikeRecord
-- `search.py`          — SearchResult, SearchResponse, SearchRequest
-- `health.py`          — HealthCheckResponse, SystemStatus, DetailedHealthResponse
-- `models.py`          — Re-exports all models for backward compatibility
-- `__init__.py`        — Re-exports all models for convenient imports
-
-## Import Patterns
-
-### Preferred (Explicit) Imports
-
-For new code, **import models directly from their submodules** for clarity and IDE support:
-
-```python
-from models.article import Article, ArticleResponse
-from models.auth import SignupRequest, AuthResponse
-from models.scraper import ScrapedArticle
+```
+models/
+├── __init__.py                 # Main exports and backward compatibility
+├── core/                       # Core domain models
+│   ├── __init__.py
+│   ├── article.py             # Article models and enums
+│   ├── user.py                # User models
+│   └── base.py                # Base models and common types
+├── api/                        # API request/response models
+│   ├── __init__.py
+│   ├── auth.py                # Authentication models
+│   ├── search.py              # Search request/response models
+│   ├── recommendation.py      # Recommendation models
+│   └── likes.py               # User interaction models
+├── analytics/                  # Analytics and reporting models
+│   ├── __init__.py
+│   ├── metrics.py             # Analytics metrics models
+│   └── reports.py             # Report generation models
+├── system/                     # System and infrastructure models
+│   ├── __init__.py
+│   ├── health.py              # Health check models
+│   └── monitoring.py          # Monitoring and logging models
+├── scraping/                   # Content scraping models
+│   ├── __init__.py
+│   ├── scraper.py             # Scraper configuration and results
+│   └── content.py             # Content processing models
+└── events/                     # Event-driven architecture models
+    ├── __init__.py
+    ├── base.py                # Base event models
+    ├── article_events.py      # Article-related events
+    ├── user_events.py         # User interaction events
+    └── system_events.py       # System and monitoring events
 ```
 
-### Backward-Compatible Imports
+## Model Categories
 
-For legacy code or convenience, you can still import from the top-level `models` package:
+### Core Models (`core/`)
+- **article.py**: Article entities, categories, sources
+- **user.py**: User entities and profiles
+- **base.py**: Base classes and common types
 
+### API Models (`api/`)
+- **auth.py**: Authentication requests/responses
+- **search.py**: Search functionality models
+- **recommendation.py**: Recommendation system models
+- **likes.py**: User interaction models
+
+### Analytics Models (`analytics/`)
+- **metrics.py**: Analytics metrics and aggregations
+- **reports.py**: Report generation and data structures
+
+### System Models (`system/`)
+- **health.py**: Health check and monitoring
+- **monitoring.py**: System monitoring and observability
+
+### Scraping Models (`scraping/`)
+- **scraper.py**: Web scraper configuration
+- **content.py**: Content processing and validation
+
+### Event Models (`events/`)
+- **base.py**: Base event classes
+- **article_events.py**: Article processing events
+- **user_events.py**: User interaction events
+- **system_events.py**: System and monitoring events
+
+## Import Guidelines
+
+### For New Code
+Import models directly from their specific modules:
 ```python
-from models import Article, ArticleResponse, SignupRequest, ScrapedArticle
+from models.core.article import Article, ArticleResponse
+from models.api.auth import SignupRequest, AuthResponse
+from models.analytics.metrics import TagCount
 ```
 
-This works because `models/models.py` and `models/__init__.py` re-export all models.
+### For Backward Compatibility
+The main `__init__.py` re-exports commonly used models:
+```python
+from models import Article, ArticleResponse, SignupRequest
+```
 
 ## Adding New Models
 
-- Place new models in the most appropriate submodule (or create a new one if needed)
-- Add a docstring to each model explaining its purpose and validation
-- Update `models/models.py` and `models/__init__.py` to re-export the new model if you want it available at the top level
+1. **Identify the domain**: Choose the appropriate subdirectory
+2. **Follow naming conventions**: Use descriptive names and proper validation
+3. **Add to exports**: Update the relevant `__init__.py` files
+4. **Update main exports**: Add to `models/__init__.py` if commonly used
 
-## Why Modularize?
+## Validation Guidelines
 
-- **Easier navigation:** Quickly find and update models by domain
-- **Fewer merge conflicts:** Smaller files, less overlap
-- **Better code clarity:** Imports show exactly which models are used
-- **Scalability:** Add new features without cluttering a single file
-
-## Example Usage
-
-```python
-# In a route or service
-from models.article import ArticleResponse
-
-# Validate data from the database
-try:
-    article = ArticleResponse(**db_row)
-except ValidationError as ve:
-    logger.error(f"Validation error: {ve}")
-```
-
----
+- Use Pydantic validators for complex validation logic
+- Include field descriptions for API documentation
+- Add proper error messages for validation failures
+- Use enums for constrained values
+- Include proper type hints for all fields
