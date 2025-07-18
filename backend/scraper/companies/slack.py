@@ -5,7 +5,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.remote.webdriver import WebDriver
 
-from .baseScraper import BaseBlogScraper
+from ..base.base_scraper import BaseBlogScraper
 from models.scraper import ScrapedArticle
 
 
