@@ -12,15 +12,16 @@ from routes.recommend import RecommendController
 from routes.scraper import ScraperController
 from routes.health import HealthController
 from routes.search import SearchController
+from config import settings, get_environment, get_cors_origins, get_rate_limits
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info("🚀 FastAPI application is starting up")
+    logger.info(f"🚀 FastAPI application is starting up in {get_environment()} environment")
     yield
     logger.info("🛑 FastAPI application is shutting down")
 
 app = FastAPI(
-    title="Engineering Blog Recommender API",
+    title=settings.app_name,
     description="""
     ## 🚀 Engineering Blog Recommender API
     
@@ -53,7 +54,7 @@ app = FastAPI(
     
     All request/response models are validated using Pydantic for type safety and automatic documentation.
     """,
-    version="1.0.0",
+    version=settings.app_version,
     contact={
         "name": "Engineering Blog Recommender Team",
         "url": "https://github.com/yourusername/engineering-blog-recommender",
@@ -100,35 +101,51 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Configure CORS based on environment
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=get_cors_origins(),
+    allow_credentials=settings.api.cors_credentials,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-controllers = [
-    SearchController(),       # 0
-    ArticlesController(),     # 1
-    ScraperController(),      # 2
-    RecommendController(),    # 3
-    AnalyticsController(),    # 4
-    AuthController(),         # 5
-    LikesController(),        # 6
-    HealthController(),       # 7
-]
+# Initialize controllers based on feature flags
+controllers = []
 
+if settings.features.enable_search:
+    controllers.append(SearchController())
+
+if settings.features.enable_recommendations:
+    controllers.append(RecommendController())
+
+if settings.features.enable_scraping:
+    controllers.append(ScraperController())
+
+if settings.features.enable_analytics:
+    controllers.append(AnalyticsController())
+
+# Always include core controllers
+controllers.extend([
+    ArticlesController(),
+    AuthController(),
+    LikesController(),
+    HealthController(),
+])
+
+# Register routes with tags
 app.include_router(controllers[0].router, prefix="/search", tags=["Search"])
-app.include_router(controllers[1].router, prefix="/articles", tags=["Articles"])
+app.include_router(controllers[1].router, prefix="/find", tags=["Recommendations"])
 app.include_router(controllers[2].router, prefix="/scrape", tags=["Scraping"])
-app.include_router(controllers[3].router, prefix="/find", tags=["Recommendations"])
-app.include_router(controllers[4].router, prefix="/analytics", tags=["Analytics"])
+app.include_router(controllers[3].router, prefix="/analytics", tags=["Analytics"])
+app.include_router(controllers[4].router, prefix="/articles", tags=["Articles"])
 app.include_router(controllers[5].router, prefix="/auth", tags=["Authentication"])
 app.include_router(controllers[6].router, prefix="/user", tags=["User Preferences"])
 app.include_router(controllers[7].router, tags=["Health"])
 
-Instrumentator().instrument(app).expose(app)
+# Configure Prometheus monitoring if enabled
+if settings.monitoring.prometheus_enabled:
+    Instrumentator().instrument(app).expose(app)
 
 @app.get("/", 
     summary="API Root",
@@ -143,9 +160,16 @@ def root():
     Returns basic information about the API including version and status.
     """
     return {
-        "message": "Engineering Blog Recommender API is running ✅",
-        "version": "1.0.0",
+        "message": f"{settings.app_name} is running ✅",
+        "version": settings.app_version,
+        "environment": get_environment(),
         "status": "healthy",
         "documentation": "/docs",
-        "health_check": "/health"
+        "health_check": "/health",
+        "features": {
+            "search": settings.features.enable_search,
+            "recommendations": settings.features.enable_recommendations,
+            "scraping": settings.features.enable_scraping,
+            "analytics": settings.features.enable_analytics,
+        }
     }
